@@ -44,7 +44,7 @@ st.markdown("""
         border-left: 5px solid #D32F2F; 
     }
     
-    /* 💡 로그인 박스 디자인 개선 (크기 축소 및 로고 반영) */
+    /* 로그인 박스 디자인 개선 */
     .login-container {
         background-color: #FFFFFF;
         padding: 30px; 
@@ -102,19 +102,17 @@ def check_password():
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state or not st.session_state["password_correct"]:
-        # 💡 컬럼 비율을 조정하여 로그인 창 크기를 슬림하게 조절
         col1, col2, col3 = st.columns([1.5, 1.2, 1.5])
         with col2:
             st.markdown("""
             <div class="login-container">
-                <!-- 💡 공식 홈페이지 로고 삽입 -->
+                <!-- 원본 로고 그대로 사용 -->
                 <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 160px; margin-bottom: 15px;">
                 <div class="brand-subtitle">프리미엄 450°C 화덕 생선구이 전문점</div>
                 <div class="brand-title">본사 통합 평판관리</div>
             </div>
             """, unsafe_allow_html=True)
             
-            # 비밀번호 입력란 가시성 확보
             st.text_input("🔑 본사 직원 인증 코드 (비밀번호)를 입력하십시오.", type="password", on_change=password_entered, key="password", placeholder="여기를 클릭하여 입력하세요")
             
             if "password_correct" in st.session_state and not st.session_state["password_correct"]:
@@ -130,7 +128,7 @@ if not check_password():
 # ==========================================
 # 📊 3. 대시보드 본문 (인증된 직원 전용)
 # ==========================================
-# 💡 조치 완료된 리뷰를 기억하는 세션 상태 초기화
+# 조치 완료된 리뷰를 기억하는 세션 상태 초기화
 if 'resolved_reviews' not in st.session_state:
     st.session_state.resolved_reviews = []
 
@@ -172,10 +170,10 @@ full_store_list = load_store_list()
 if not full_store_list:
     full_store_list = sorted(df['매장명'].unique().tolist()) if not df.empty else ["매장 없음"]
 
-# 사이드바 (공식 로고 적용)
+# 사이드바 (로고 하얀색 깨짐 현상 완벽 복구 - 배경을 하얗게 깔아 원본 보존)
 st.sidebar.markdown("""
-<div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
-    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 120px; filter: brightness(0) invert(1);">
+<div style="background-color: white; padding: 15px; border-radius: 8px; text-align: center; margin-top: 10px; margin-bottom: 20px;">
+    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 100%;">
 </div>
 """, unsafe_allow_html=True)
 st.sidebar.markdown("<p style='text-align: center; font-size: 13px; color: #AAAAAA !important;'>가맹관리팀 슈퍼바이저 패널</p>", unsafe_allow_html=True)
@@ -215,17 +213,17 @@ if menu == "전체 브랜드 평판 현황":
     if not active_negative_df.empty:
         st.error(f"⚠️ **총 {len(active_negative_df)}건**의 부정/불만 리뷰가 남아있습니다. 해피콜 조치 후 '완료' 버튼을 눌러주십시오.")
         
-        # 💡 리뷰를 하나씩 띄워주고 '조치완료' 버튼 제공
+        # 리뷰를 하나씩 띄워주고 '조치완료' 버튼 제공
         for idx, row in active_negative_df.iterrows():
             with st.container():
                 col_text, col_btn = st.columns([0.85, 0.15])
                 with col_text:
                     st.warning(f"**[{row['매장명']}]** {row['작성일']} \n\n 💬 {row['리뷰내용']}")
                 with col_btn:
-                    st.write("") # 간격 맞추기
+                    st.write("") 
                     if st.button("✅ 조치 완료", key=f"resolve_{idx}"):
                         st.session_state.resolved_reviews.append(idx)
-                        st.rerun() # 클릭 즉시 화면 새로고침하여 리스트에서 삭제
+                        st.rerun() 
     else:
         st.success("🎉 현재 조치가 필요한 부정/불만 리뷰가 없습니다. 가맹점 관리가 완벽하게 이루어지고 있습니다!")
         
@@ -244,12 +242,12 @@ if menu == "전체 브랜드 평판 현황":
         st.dataframe(review_counts.tail(5).sort_values(by='누적 리뷰 수', ascending=True).reset_index(drop=True), use_container_width=True)
 
 # ------------------------------------------
-# 메뉴 2. 개별 가맹점 분석
+# 메뉴 2. 개별 가맹점 분석 (차트 에러 완벽 복구)
 # ------------------------------------------
 else:
     st.markdown("<h1>가맹점 상세 분석 <span style='font-size: 18px; color: #999;'>| Store Details</span></h1>", unsafe_allow_html=True)
     
-    # 💡 검색 기능 추가: 검색어 입력 시 드롭다운 리스트 즉시 필터링
+    # 검색 기능 추가
     search_query = st.text_input("🔍 매장명 검색 (예: 첨단, 어양)", placeholder="검색할 매장 이름을 입력하세요")
     
     if search_query:
@@ -270,9 +268,24 @@ else:
         else:
             st.markdown(f"<h3 style='margin-top: 20px;'>[{selected_store}] 고객 반응 요약</h3>", unsafe_allow_html=True)
             col1, col2, col3 = st.columns(3)
-            st.plotly_chart(fig, use_container_width=True)
+            with col1: st.metric("누적 전체 리뷰", f"{len(store_df)}건")
+            with col2: st.metric("긍정 평가 (맛/서비스 만족)", f"{len(store_df[store_df['감정분석'] == '긍정'])}건")
+            with col3: st.metric("부정 평가 (개선 필요)", f"{len(store_df[store_df['감정분석'] == '부정'])}건")
             
-        with col_list:
-            st.markdown("<b style='font-size: 16px;'>최신 리뷰 상세 내역</b>", unsafe_allow_html=True)
-            display_df = store_df[['작성일', '감정분석', '리뷰내용']].sort_values(by='작성일', ascending=False).reset_index(drop=True)
-            st.dataframe(display_df, use_container_width=True)
+            st.divider()
+            
+            # 💡 실수로 지워졌던 차트/리스트 출력 영역 복구
+            col_chart, col_list = st.columns([1, 2])
+            
+            with col_chart:
+                st.markdown("<b style='font-size: 16px;'>누적 감정 비율</b>", unsafe_allow_html=True)
+                sentiment_counts = store_df['감정분석'].value_counts().reset_index()
+                sentiment_counts.columns = ['감정', '비율']
+                fig = px.pie(sentiment_counts, values='비율', names='감정', color='감정', color_discrete_map={'긍정':'#111111', '부정':'#D32F2F', '중립':'#AAAAAA'})
+                fig.update_layout(margin=dict(t=20, b=0, l=0, r=0))
+                st.plotly_chart(fig, use_container_width=True)
+                
+            with col_list:
+                st.markdown("<b style='font-size: 16px;'>최신 리뷰 상세 내역</b>", unsafe_allow_html=True)
+                display_df = store_df[['작성일', '감정분석', '리뷰내용']].sort_values(by='작성일', ascending=False).reset_index(drop=True)
+                st.dataframe(display_df, use_container_width=True)
