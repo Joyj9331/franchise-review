@@ -3,19 +3,25 @@ import pandas as pd
 import plotly.express as px
 import os
 import hashlib
+import time
 
 # ==========================================
 # ⚙️ 1. 페이지 기본 설정 및 공식 브랜드 CSS 주입
 # ==========================================
-st.set_page_config(page_title="달빛에구운고등어 평판관리", page_icon="🐟", layout="wide")
+st.set_page_config(page_title="달빛에구운고등어 리뷰 관리", page_icon="🐟", layout="wide")
 
-# (주)새모양에프앤비 - 프리미엄 B2B 어드민 UI 적용 (다크/골드 테마)
+# (주)새모양에프앤비 - 프리미엄 B2B 어드민 UI 적용 & 애니메이션 추가
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap');
     
     html, body, [class*="css"]  {
         font-family: 'Noto Sans KR', sans-serif !important;
+    }
+    
+    /* 💡 다크모드 충돌 방지: 본문 텍스트 강제 다크 처리 */
+    h1, h2, h3, h4, h5, h6, p, span, div, label, li {
+        color: #111111 !important;
     }
     
     h1, h2, h3, .brand-title {
@@ -28,7 +34,7 @@ st.markdown("""
         background-color: #F4F6F8;
     }
     
-    /* 사이드바: 밤하늘 블랙 테마 (로고가 가장 잘 보이는 색상) */
+    /* 💡 사이드바 텍스트는 화이트 유지 */
     [data-testid="stSidebar"] {
         background-color: #111111 !important;
         border-right: 1px solid #222222;
@@ -44,27 +50,46 @@ st.markdown("""
         padding: 20px 25px;
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        border-left: 5px solid #E8B923; /* 달빛 골드 포인트 */
+        border-left: 5px solid #E8B923; 
     }
     
-    /* 💡 완벽하게 비율이 조정된 프리미엄 다크 로그인 박스 */
+    /* =========================================
+       🚀 프리미엄 애니메이션 (Zoom-in & Suck-in)
+       ========================================= */
+    @keyframes zoomInBack {
+        0% { transform: scale(0.6); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes suckIn {
+        0% { transform: scale(1.05); opacity: 0; filter: blur(3px); }
+        100% { transform: scale(1); opacity: 1; filter: blur(0); }
+    }
+
+    /* 💡 슬림해진 로그인 박스 및 등장 애니메이션 */
     .login-wrapper {
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: 8vh;
+        margin-top: 10vh;
         margin-bottom: 2vh;
+        animation: zoomInBack 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
     .login-container {
-        background-color: #111111; /* 다크 배경 */
-        color: #FFFFFF;
+        background-color: #111111; 
         padding: 40px 50px; 
         border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         text-align: center;
         border-top: 5px solid #E8B923;
         width: 100%;
     }
+    
+    /* 로그인 컨테이너 내부 텍스트 화이트 강제 유지 */
+    .login-container p, .login-container span, .login-container div, .login-container label {
+        color: #FFFFFF !important;
+    }
+    
     .brand-title {
         color: #FFFFFF !important;
         font-size: 26px;
@@ -72,7 +97,7 @@ st.markdown("""
         margin-bottom: 5px;
     }
     .brand-subtitle {
-        color: #E8B923;
+        color: #E8B923 !important;
         font-size: 14px;
         margin-bottom: 30px;
         font-weight: 400;
@@ -81,13 +106,15 @@ st.markdown("""
     /* 버튼 통합 디자인 (고급스러운 레드) */
     .stButton > button {
         background-color: #D32F2F !important;
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
         border-radius: 6px !important;
         border: none !important;
         height: 42px;
         transition: all 0.3s ease;
         box-shadow: 0 2px 5px rgba(211,47,47,0.2);
+    }
+    .stButton > button * {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
     }
     .stButton > button:hover {
         background-color: #B71C1C !important;
@@ -111,8 +138,8 @@ st.markdown("""
         box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     }
     div[data-testid="stExpander"] p {
-        font-weight: 500;
-        color: #111111;
+        font-weight: 600 !important;
+        color: #111111 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -130,25 +157,29 @@ def check_password():
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state or not st.session_state["password_correct"]:
-        col1, col2, col3 = st.columns([1, 1.2, 1])
+        # 💡 가로폭을 대폭 줄여서 시선을 집중시킴 [1.5, 1, 1.5]
+        col1, col2, col3 = st.columns([1.5, 1, 1.5])
         with col2:
             st.markdown("""
             <div class="login-wrapper">
                 <div class="login-container">
-                    <!-- 💡 어두운 배경에서 원본 로고가 완벽하게 살아납니다 -->
                     <img src="https://dalbitgo.com/images/main_logo.png" style="height: 60px; object-fit: contain;">
-                    <div class="brand-title">본사 통합 평판관리</div>
+                    <!-- 💡 명칭 변경: 실무에 맞게 수정 -->
+                    <div class="brand-title">리뷰 관리 프로그램</div>
                     <div class="brand-subtitle">프리미엄 450°C 화덕 생선구이 전문점</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
+            # 입력창 가시성 확보를 위해 label 색상 강제 지정은 CSS로 처리함
             st.text_input("🔑 본사 직원 인증 코드 (비밀번호)를 입력하십시오.", type="password", on_change=password_entered, key="password", placeholder="여기를 클릭하여 입력하세요")
             
             if "password_correct" in st.session_state and not st.session_state["password_correct"]:
                 st.error("❌ 인증 코드가 일치하지 않습니다.")
         return False
     else:
+        # 💡 로그인 완료 시 화면이 빨려 들어가는 (suckIn) 애니메이션 주입
+        st.markdown("<style>[data-testid='block-container'] { animation: suckIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }</style>", unsafe_allow_html=True)
         return True
 
 if not check_password():
@@ -173,7 +204,6 @@ def add_saved_id(filename, new_id):
         pd.DataFrame({'id': ids}).to_csv(filename, index=False)
 
 def generate_id(row):
-    # 매장명, 작성일, 리뷰내용을 조합하여 고유 ID 생성
     return hashlib.md5(f"{row['매장명']}_{row['작성일']}_{row['리뷰내용']}".encode()).hexdigest()
 
 
@@ -203,7 +233,6 @@ def load_data():
         }
         df = pd.DataFrame(data)
 
-    # 💡 데이터프레임에 고유 ID 부여 및 오분류된 상태 강제 업데이트
     df['id'] = df.apply(generate_id, axis=1)
     overridden_ids = get_saved_ids(STATE_OVERRIDDEN)
     df.loc[df['id'].isin(overridden_ids), '감정분석'] = '긍정'
@@ -225,7 +254,7 @@ full_store_list = load_store_list()
 if not full_store_list:
     full_store_list = sorted(df['매장명'].unique().tolist()) if not df.empty else ["매장 없음"]
 
-# 💡 사이드바: 다크 테마 적용으로 로고 원본 유지
+# 사이드바
 st.sidebar.markdown("""
 <div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
     <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 85%;">
@@ -234,7 +263,7 @@ st.sidebar.markdown("""
 st.sidebar.markdown("<p style='text-align: center; font-size: 13px; color: #E8B923 !important; font-weight: 500;'>가맹관리팀 슈퍼바이저 패널</p>", unsafe_allow_html=True)
 st.sidebar.divider()
 
-menu = st.sidebar.radio("🔎 데이터 분석 메뉴", ["전체 브랜드 평판 현황", "개별 가맹점 집중 분석"])
+menu = st.sidebar.radio("🔎 데이터 분석 메뉴", ["전체 브랜드 리뷰 현황", "개별 가맹점 집중 분석"])
 st.sidebar.divider()
 
 if st.sidebar.button("🔄 최신 데이터 동기화", use_container_width=True):
@@ -254,22 +283,20 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 
 # ------------------------------------------
-# 메뉴 1. 전체 브랜드 평판
+# 메뉴 1. 전체 브랜드 리뷰 현황
 # ------------------------------------------
-if menu == "전체 브랜드 평판 현황":
-    st.markdown("<h1>전체 가맹점 평판 리포트 <span style='font-size: 18px; color: #999;'>| Daily Dashboard</span></h1>", unsafe_allow_html=True)
+if menu == "전체 브랜드 리뷰 현황":
+    st.markdown("<h1>전체 가맹점 리뷰 리포트 <span style='font-size: 18px; color: #777;'>| Daily Dashboard</span></h1>", unsafe_allow_html=True)
     
     st.markdown("<h3 style='margin-top: 30px; color: #111111 !important;'>🚨 즉각 조치 요망 매장 (To-Do List)</h3>", unsafe_allow_html=True)
     
-    # 부정 리뷰 추출 및 영구 조치 완료된 항목 필터링
     resolved_ids = get_saved_ids(STATE_RESOLVED)
     negative_df = df[df['감정분석'] == '부정'].copy()
     active_negative_df = negative_df[~negative_df['id'].isin(resolved_ids)]
     
     if not active_negative_df.empty:
-        st.markdown(f"<div style='color: #D32F2F; font-size: 15px; margin-bottom: 15px;'>⚠️ <b>총 {len(active_negative_df)}건</b>의 부정/불만 리뷰가 남아있습니다. 해피콜 조치 후 완료 버튼을 누르거나, 긍정 리뷰일 경우 수정해주세요.</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='color: #D32F2F; font-size: 15px; margin-bottom: 15px; font-weight: 600;'>⚠️ 총 {len(active_negative_df)}건의 부정/불만 리뷰가 남아있습니다. 해피콜 조치 후 완료 버튼을 누르거나, 긍정 리뷰일 경우 수정해주세요.</div>", unsafe_allow_html=True)
         
-        # 💡 [더보기] 아코디언 방식으로 압축된 UI
         for idx, row in active_negative_df.iterrows():
             short_text = row['리뷰내용'][:20] + "..." if len(row['리뷰내용']) > 20 else row['리뷰내용']
             with st.expander(f"📌 [{row['매장명']}] {row['작성일']} | {short_text}"):
@@ -305,9 +332,8 @@ if menu == "전체 브랜드 평판 현황":
 # 메뉴 2. 개별 가맹점 분석
 # ------------------------------------------
 else:
-    st.markdown("<h1>가맹점 상세 분석 <span style='font-size: 18px; color: #999;'>| Store Big Data</span></h1>", unsafe_allow_html=True)
+    st.markdown("<h1>가맹점 상세 분석 <span style='font-size: 18px; color: #777;'>| Store Big Data</span></h1>", unsafe_allow_html=True)
     
-    # 검색 기능
     st.markdown("<div style='margin-top: 20px; margin-bottom: -15px;'><b style='font-size: 14px; color: #666;'>🔍 매장명 검색</b></div>", unsafe_allow_html=True)
     search_query = st.text_input(" ", placeholder="예: 첨단, 어양 (검색 즉시 아래 목록이 필터링됩니다)")
     
@@ -334,7 +360,6 @@ else:
             
             st.divider()
             
-            # 💡 일별 리뷰 발생 추이 그래프 추가 (빅데이터 시각화)
             st.markdown("<b style='font-size: 16px;'>📈 일별 리뷰 발생 추이</b>", unsafe_allow_html=True)
             trend_df = store_df.groupby('작성일').size().reset_index(name='리뷰 발생 건수')
             trend_df = trend_df.sort_values(by='작성일')
