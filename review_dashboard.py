@@ -20,7 +20,7 @@ st.markdown("""
     }
     
     /* 💡 다크모드 충돌 방지: 본문 텍스트 강제 다크 처리 */
-    h1, h2, h3, h4, h5, h6, p, span, div, label, li {
+    h1, h2, h3, h4, h5, h6, p, label, li {
         color: #111111 !important;
     }
     
@@ -34,12 +34,18 @@ st.markdown("""
         background-color: #F4F6F8;
     }
     
-    /* 💡 사이드바 텍스트는 화이트 유지 */
+    /* 사이드바: 텍스트 화이트 강제 유지 */
     [data-testid="stSidebar"] {
         background-color: #111111 !important;
         border-right: 1px solid #222222;
     }
-    [data-testid="stSidebar"] * {
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] div, 
+    [data-testid="stSidebar"] label {
         color: #FFFFFF !important; 
     }
     
@@ -66,7 +72,7 @@ st.markdown("""
         100% { transform: scale(1); opacity: 1; filter: blur(0); }
     }
 
-    /* 💡 슬림해진 로그인 박스 및 등장 애니메이션 */
+    /* 슬림해진 로그인 박스 및 등장 애니메이션 */
     .login-wrapper {
         display: flex;
         justify-content: center;
@@ -76,7 +82,7 @@ st.markdown("""
         animation: zoomInBack 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
     .login-container {
-        background-color: #111111; 
+        background-color: #111111 !important; 
         padding: 40px 50px; 
         border-radius: 16px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.2);
@@ -101,6 +107,54 @@ st.markdown("""
         font-size: 14px;
         margin-bottom: 30px;
         font-weight: 400;
+    }
+
+    /* 💡 1. 투두리스트(Expander) 강제 하얀색 배경 및 글씨체 완벽 복원 */
+    div[data-testid="stExpander"] {
+        background-color: #FFFFFF !important;
+        border-radius: 8px;
+        border: 1px solid #EAEAEA;
+        border-left: 4px solid #D32F2F;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        overflow: hidden;
+    }
+    div[data-testid="stExpander"] details {
+        background-color: #FFFFFF !important;
+    }
+    div[data-testid="stExpander"] summary {
+        background-color: #F8F9FA !important; /* 살짝 밝은 회색으로 헤더 구분 */
+        color: #111111 !important;
+    }
+    div[data-testid="stExpander"] summary:hover {
+        background-color: #EEEEEE !important;
+    }
+    div[data-testid="stExpander"] summary p,
+    div[data-testid="stExpander"] summary span {
+        color: #111111 !important;
+        font-weight: 600 !important;
+    }
+
+    /* 💡 2. 드롭다운(Selectbox) 강제 하얀색 배경 */
+    div[data-baseweb="select"] > div {
+        background-color: #FFFFFF !important;
+        border: 1px solid #CCCCCC !important;
+    }
+    div[data-baseweb="select"] span {
+        color: #111111 !important;
+    }
+    /* 드롭다운 클릭 시 뜨는 리스트 항목 하얀색 고정 */
+    ul[role="listbox"] {
+        background-color: #FFFFFF !important;
+    }
+    ul[role="listbox"] li {
+        color: #111111 !important;
+    }
+
+    /* 💡 3. 입력창(TextInput) 강제 하얀색 배경 */
+    .stTextInput input {
+        background-color: #FFFFFF !important;
+        color: #111111 !important;
+        border: 1px solid #CCCCCC !important;
     }
     
     /* 버튼 통합 디자인 (고급스러운 레드) */
@@ -128,19 +182,6 @@ st.markdown("""
         border: 1px solid #EAEAEA;
         background-color: #FFFFFF;
     }
-    
-    /* Expander(더보기) 디자인 변경 */
-    div[data-testid="stExpander"] {
-        background-color: #FFFFFF;
-        border-radius: 8px;
-        border: 1px solid #EAEAEA;
-        border-left: 4px solid #D32F2F;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-    }
-    div[data-testid="stExpander"] p {
-        font-weight: 600 !important;
-        color: #111111 !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -157,28 +198,24 @@ def check_password():
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state or not st.session_state["password_correct"]:
-        # 💡 가로폭을 대폭 줄여서 시선을 집중시킴 [1.5, 1, 1.5]
         col1, col2, col3 = st.columns([1.5, 1, 1.5])
         with col2:
             st.markdown("""
             <div class="login-wrapper">
                 <div class="login-container">
                     <img src="https://dalbitgo.com/images/main_logo.png" style="height: 60px; object-fit: contain;">
-                    <!-- 💡 명칭 변경: 실무에 맞게 수정 -->
                     <div class="brand-title">리뷰 관리 프로그램</div>
                     <div class="brand-subtitle">프리미엄 450°C 화덕 생선구이 전문점</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-            # 입력창 가시성 확보를 위해 label 색상 강제 지정은 CSS로 처리함
             st.text_input("🔑 본사 직원 인증 코드 (비밀번호)를 입력하십시오.", type="password", on_change=password_entered, key="password", placeholder="여기를 클릭하여 입력하세요")
             
             if "password_correct" in st.session_state and not st.session_state["password_correct"]:
                 st.error("❌ 인증 코드가 일치하지 않습니다.")
         return False
     else:
-        # 💡 로그인 완료 시 화면이 빨려 들어가는 (suckIn) 애니메이션 주입
         st.markdown("<style>[data-testid='block-container'] { animation: suckIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }</style>", unsafe_allow_html=True)
         return True
 
