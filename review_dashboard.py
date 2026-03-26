@@ -19,7 +19,7 @@ st.markdown("""
         font-family: 'Noto Sans KR', sans-serif !important;
     }
     
-    /* 💡 다크모드 충돌 방지: 본문 텍스트 강제 다크 처리 */
+    /* 다크모드 충돌 방지: 본문 텍스트 강제 다크 처리 */
     h1, h2, h3, h4, h5, h6, p, label, li {
         color: #111111 !important;
     }
@@ -72,7 +72,6 @@ st.markdown("""
         100% { transform: scale(1); opacity: 1; filter: blur(0); }
     }
 
-    /* 슬림해진 로그인 박스 및 등장 애니메이션 */
     .login-wrapper {
         display: flex;
         justify-content: center;
@@ -122,7 +121,7 @@ st.markdown("""
         background-color: #FFFFFF !important;
     }
     div[data-testid="stExpander"] summary {
-        background-color: #F8F9FA !important; /* 살짝 밝은 회색으로 헤더 구분 */
+        background-color: #F8F9FA !important; 
         color: #111111 !important;
     }
     div[data-testid="stExpander"] summary:hover {
@@ -134,7 +133,7 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    /* 💡 2. 드롭다운(Selectbox) 강제 하얀색 배경 */
+    /* 💡 2. 드롭다운(Selectbox) 및 드롭다운 팝업 리스트 강제 화이트 처리 */
     div[data-baseweb="select"] > div {
         background-color: #FFFFFF !important;
         border: 1px solid #CCCCCC !important;
@@ -142,19 +141,45 @@ st.markdown("""
     div[data-baseweb="select"] span {
         color: #111111 !important;
     }
-    /* 드롭다운 클릭 시 뜨는 리스트 항목 하얀색 고정 */
+    
+    /* 클릭 시 튀어나오는 팝업 영역 (Portal 영역 강제 제어) */
+    div[data-baseweb="popover"], 
+    div[data-baseweb="menu"], 
     ul[role="listbox"] {
         background-color: #FFFFFF !important;
+        border-radius: 8px !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
     }
-    ul[role="listbox"] li {
-        color: #111111 !important;
-    }
-
-    /* 💡 3. 입력창(TextInput) 강제 하얀색 배경 */
-    .stTextInput input {
+    
+    /* 팝업 안의 각 매장 리스트 항목 글씨 먹색 제어 */
+    li[role="option"], 
+    li[role="option"] span {
         background-color: #FFFFFF !important;
         color: #111111 !important;
+        font-weight: 500 !important;
+    }
+    
+    /* 마우스 올렸을 때(Hover) 약간 밝은 회색으로 피드백 */
+    li[role="option"]:hover, 
+    li[role="option"]:hover span,
+    li[role="option"][aria-selected="true"] {
+        background-color: #F4F6F8 !important;
+        color: #D32F2F !important; /* 포인트 컬러인 레드로 강조 */
+    }
+
+    /* 💡 3. 입력창(TextInput) 강제 하얀색 배경 및 먹색 글씨 */
+    div[data-baseweb="input"] {
+        background-color: #FFFFFF !important;
+    }
+    div[data-baseweb="input"] input {
+        background-color: #FFFFFF !important;
+        color: #111111 !important;
+        -webkit-text-fill-color: #111111 !important; /* 강력한 다크모드 방어 */
         border: 1px solid #CCCCCC !important;
+    }
+    div[data-baseweb="input"] input::placeholder {
+        color: #AAAAAA !important;
+        -webkit-text-fill-color: #AAAAAA !important;
     }
     
     /* 버튼 통합 디자인 (고급스러운 레드) */
