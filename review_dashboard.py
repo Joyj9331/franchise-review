@@ -214,21 +214,33 @@ saved_config = load_naver_config()
 # ==========================================
 def get_naver_keyword_info(cid, akey, skey, keyword):
     """
-    네이버 검색광고 API 연동
-    메인 키워드 및 관련 연관 검색어 리스트를 모두 가져오도록 업데이트 완료!
+    네이버 검색광고 API 연동 (자동 정제 및 에러 세분화 적용)
     """
+    # 💡 오타 및 공백 방지를 위한 자동 정제 (문자열 변환 후 처리)
+    cid = str(cid).replace("-", "").strip()
+    akey = str(akey).strip()
+    skey = str(skey).strip()
+    keyword = str(keyword).strip()
+    
     timestamp = str(int(time.time() * 1000))
     uri = "/keywordstool"
     method = "GET"
-    sig = base64.b64encode(hmac.new(str(skey).encode("utf-8"), f"{timestamp}.{method}.{uri}".encode("utf-8"), hashlib.sha256).digest()).decode("utf-8")
-    headers = {"X-Timestamp": timestamp, "X-API-KEY": akey, "X-Customer": str(cid), "X-Signature": sig}
+    sig = base64.b64encode(hmac.new(skey.encode("utf-8"), f"{timestamp}.{method}.{uri}".encode("utf-8"), hashlib.sha256).digest()).decode("utf-8")
+    headers = {"X-Timestamp": timestamp, "X-API-KEY": akey, "X-Customer": cid, "X-Signature": sig}
+    
     try:
         res = requests.get(f"https://api.naver.com{uri}", params={"hintKeywords": keyword, "showDetail": "1"}, headers=headers)
         if res.status_code == 200:
             data = res.json().get('keywordList', [])
-            return data # 💡 전체 연관 검색어 리스트 반환으로 변경
-    except: return None
-    return None
+            if not data:
+                return {"status": "empty", "data": []}
+            return {"status": "success", "data": data}
+        elif res.status_code == 401:
+            return {"status": "auth_error", "data": []}
+        else:
+            return {"status": "api_error", "data": res.status_code}
+    except:
+        return {"status": "network_error", "data": []}
 
 # ==========================================
 # 📌 5. 사이드바 메뉴
@@ -285,7 +297,6 @@ if main_menu == "💬 가맹점 리뷰 관리":
                 st.markdown("**📈 일별 리뷰 발생 추이**")
                 st.plotly_chart(px.line(s_df.groupby('작성일').size().reset_index(name='건수'), x='작성일', y='건수', markers=True, color_discrete_sequence=['#D32F2F']), use_container_width=True)
                 
-                # 💡 데이터 검증 섹션 추가
                 st.divider()
                 st.markdown("### 🔍 수집 데이터 전수 검증 (원본 내역)")
                 st.write("봇이 수집한 원본 리뷰 텍스트입니다. 인공지능 분류가 정확한지 확인해 보십시오.")
@@ -309,12 +320,18 @@ elif main_menu == "📈 브랜드 키워드 분석":
         elif not target_k: st.warning("분석할 키워드를 입력하십시오.")
         else:
             with st.spinner("네이버 서버에서 실시간 검색량 및 연관 검색어 빅데이터를 수집 중입니다..."):
-                res_list = get_naver_keyword_info(c_id, a_key, s_key, target_k)
-                if res_list: 
-                    st.session_state.k_data_list = res_list
+                res = get_naver_keyword_info(c_id, a_key, s_key, target_k)
+                
+                if res['status'] == 'success':
+                    st.session_state.k_data_list = res['data']
                     st.session_state.kn = target_k
                     st.success("네이버 실시간 데이터 로드 완료!")
-                else: st.error("❌ 네이버 통신 오류! API 키값에 오타가 없는지, 빈칸이 복사되지 않았는지 다시 확인해주세요.")
+                elif res['status'] == 'empty':
+                    st.warning(f"⚠️ '{target_k}' 키워드는 최근 한 달 검색량이 극히 적거나 네이버에서 데이터를 제공하지 않는 세부 키워드입니다. 좀 더 큰 범주의 키워드로 검색해 보세요. (예: 충주 맛집, 생선구이)")
+                elif res['status'] == 'auth_error':
+                    st.error("❌ 인증 실패! Customer ID, Access Key, Secret Key 중 틀린 곳이 있습니다. (발급받은 키를 다시 확인해주세요)")
+                else:
+                    st.error(f"❌ 네이버 통신 오류 발생 (코드: {res.get('data', '네트워크 오류')}). 잠시 후 다시 시도해 주세요.")
     
     # API 데이터 결과 출력부
     if 'k_data_list' in st.session_state:
@@ -322,7 +339,7 @@ elif main_menu == "📈 브랜드 키워드 분석":
         target_keyword = st.session_state.kn
         
         # 1. 입력한 메인 키워드 정확히 찾기 (없으면 첫번째 데이터 사용)
-        main_kw_data = next((item for item in data_list if item['relKeyword'] == target_keyword.replace(" ", "")), data_list[0])
+        main_kw_data = next((item for item in data_list if item['relKeyword'].replace(" ", "") == target_keyword.replace(" ", "")), data_list[0])
         
         st.markdown(f"### 📊 [{target_keyword}] 최근 30일 핵심 지표 (Naver 공식 데이터)")
         
@@ -347,18 +364,18 @@ elif main_menu == "📈 브랜드 키워드 분석":
         col_g1, col_g2 = st.columns([1, 1.5])
         with col_g1:
             st.markdown("**📱 채널별 고객 검색 비중**")
-            fig_p = px.pie(values=[p_c, m_c], names=['PC 검색', '모바일 검색'], color_discrete_sequence=['#111111', '#D32F2F'])
+            safe_p_c = p_c if p_c > 0 else 1
+            safe_m_c = m_c if m_c > 0 else 1
+            fig_p = px.pie(values=[safe_p_c, safe_m_c], names=['PC 검색', '모바일 검색'], color_discrete_sequence=['#111111', '#D32F2F'])
             fig_p.update_layout(margin=dict(t=20, b=20, l=0, r=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig_p, use_container_width=True)
             
         with col_g2:
             st.markdown("**🔥 실시간 연관 검색어 Top 10 (고객 관심사)**")
-            # 입력한 메인 키워드 제외하고 상위 10개 추출
-            related_kws = [item for item in data_list if item['relKeyword'] != target_keyword.replace(" ", "")]
+            related_kws = [item for item in data_list if item['relKeyword'].replace(" ", "") != target_keyword.replace(" ", "")]
             for item in related_kws:
                 item['totalCnt'] = parse_na_cnt(item.get('monthlyPcQcCnt', 0)) + parse_na_cnt(item.get('monthlyMobileQcCnt', 0))
             
-            # 총 검색량 기준으로 정렬하여 Top 10 추출
             top_related = sorted(related_kws, key=lambda x: x['totalCnt'], reverse=True)[:10]
             
             if top_related:
@@ -366,7 +383,6 @@ elif main_menu == "📈 브랜드 키워드 분석":
                     "연관 키워드": [item['relKeyword'] for item in top_related],
                     "월간 총 검색량": [item['totalCnt'] for item in top_related]
                 })
-                # 가로 막대 그래프 (가장 많이 검색된 것이 위로 오게 reverse)
                 fig_bar = px.bar(df_top.sort_values(by="월간 총 검색량", ascending=True), x="월간 총 검색량", y="연관 키워드", orientation='h', color_discrete_sequence=['#111111'])
                 fig_bar.update_layout(margin=dict(t=20, b=20, l=0, r=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
                 st.plotly_chart(fig_bar, use_container_width=True)
@@ -377,15 +393,17 @@ elif main_menu == "📈 브랜드 키워드 분석":
         st.markdown("### 📋 연관 검색어 상세 데이터 리스트")
         st.write("해당 키워드를 검색한 사람들이 네이버에서 함께 검색한 키워드 목록입니다. (가맹점 블로그/플레이스 키워드 마케팅에 적극 활용하세요)")
         
-        detail_df = pd.DataFrame([{
-            "연관 키워드": item['relKeyword'],
-            "PC 검색량": parse_na_cnt(item.get('monthlyPcQcCnt', 0)),
-            "모바일 검색량": parse_na_cnt(item.get('monthlyMobileQcCnt', 0)),
-            "총 검색량": parse_na_cnt(item.get('monthlyPcQcCnt', 0)) + parse_na_cnt(item.get('monthlyMobileQcCnt', 0)),
-            "경쟁도": comp_dict.get(item.get('compIdx', ''), '확인 불가')
-        } for item in top_related]) # 리스트가 너무 길면 보기 힘드니 Top 10만 상세 표출
-        
-        st.dataframe(detail_df.sort_values(by="총 검색량", ascending=False).reset_index(drop=True), use_container_width=True)
+        if top_related:
+            detail_df = pd.DataFrame([{
+                "연관 키워드": item['relKeyword'],
+                "PC 검색량": parse_na_cnt(item.get('monthlyPcQcCnt', 0)),
+                "모바일 검색량": parse_na_cnt(item.get('monthlyMobileQcCnt', 0)),
+                "총 검색량": parse_na_cnt(item.get('monthlyPcQcCnt', 0)) + parse_na_cnt(item.get('monthlyMobileQcCnt', 0)),
+                "경쟁도": comp_dict.get(item.get('compIdx', ''), '확인 불가')
+            } for item in top_related])
+            st.dataframe(detail_df.sort_values(by="총 검색량", ascending=False).reset_index(drop=True), use_container_width=True)
+        else:
+            st.info("상세 데이터가 없습니다.")
 
 # ==========================================
 # 🖥️ 화면 3: 오픈/발주 통합 캘린더 (전문 복구)
