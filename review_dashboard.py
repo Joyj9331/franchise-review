@@ -41,6 +41,22 @@ st.markdown("""
         color: #FFFFFF !important; 
     }
     
+    /* 사이드바 여닫기 버튼 가시성 완벽 확보 */
+    [data-testid="collapsedControl"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #CCCCCC !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+    }
+    [data-testid="collapsedControl"] svg {
+        fill: #111111 !important;
+        color: #111111 !important;
+    }
+    [data-testid="stSidebar"] button[kind="header"] svg {
+        fill: #FFFFFF !important;
+        color: #FFFFFF !important;
+    }
+    
     /* 메트릭 카드 */
     div[data-testid="metric-container"] {
         background-color: #FFFFFF;
@@ -212,8 +228,8 @@ full_store_list = load_store_list() or sorted(df['매장명'].unique().tolist())
 # 4. 사이드바 메뉴 (단일 메뉴 구성)
 # ==========================================
 st.sidebar.markdown("""
-<div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
-    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 80%; filter: invert(1) brightness(2);">
+<div style="background-color: #FFFFFF; padding: 15px; border-radius: 8px; text-align: center; margin-top: 10px; margin-bottom: 20px;">
+    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 100%;">
 </div>
 """, unsafe_allow_html=True)
 st.sidebar.markdown("<p style='text-align: center; font-size: 13px; color: #CCCCCC !important; font-weight: 700;'>본사 통합 업무 포털</p>", unsafe_allow_html=True)
@@ -290,7 +306,15 @@ with tab2:
             
             st.markdown("**일별 리뷰 발생 추이**")
             fig_line = px.line(s_df.groupby('작성일').size().reset_index(name='건수'), x='작성일', y='건수', markers=True, color_discrete_sequence=['#D32F2F'])
-            fig_line.update_layout(margin=dict(t=20, b=20, l=0, r=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font=dict(color="#111111"))
+            # 💡 Plotly 꺾은선 그래프 축, 텍스트, 눈금선 색상 먹색 강제 고정
+            fig_line.update_layout(
+                margin=dict(t=20, b=20, l=0, r=0), 
+                paper_bgcolor="rgba(0,0,0,0)", 
+                plot_bgcolor="rgba(0,0,0,0)", 
+                font=dict(color="#111111"),
+                xaxis=dict(showgrid=True, gridcolor="#EAEAEA", tickfont=dict(color="#111111"), title_font=dict(color="#111111")),
+                yaxis=dict(showgrid=True, gridcolor="#EAEAEA", tickfont=dict(color="#111111"), title_font=dict(color="#111111"))
+            )
             st.plotly_chart(fig_line, use_container_width=True)
             
             st.divider()
