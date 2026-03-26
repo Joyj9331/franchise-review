@@ -32,7 +32,7 @@ def check_password():
         col1, col2, col3 = st.columns([1, 1, 1])
         with col2:
             st.text_input("직원 공용 비밀번호를 입력하세요", type="password", on_change=password_entered, key="password")
-            st.error("❌ 비밀번호가 틀렸습니다. (힌트: 51015)")
+            st.error("❌ 비밀번호가 틀렸습니다.")
         return False
     else:
         return True
