@@ -7,7 +7,7 @@ import hashlib
 # ==========================================
 # 1. 페이지 기본 설정 및 고정형 CSS 주입
 # ==========================================
-st.set_page_config(page_title="달빛에구운고등어 본사 인트라넷", page_icon="bar-chart", layout="wide")
+st.set_page_config(page_title="달빛에구운고등어 본사 인트라넷", layout="wide")
 
 st.markdown("""
 <style>
@@ -32,13 +32,13 @@ st.markdown("""
         background-color: #F4F6F8;
     }
     
-    /* 사이드바 다크 톤 강제 고정 및 텍스트 화이트 처리 */
+    /* 사이드바 순백색 강제 고정 및 텍스트 먹색 처리 */
     [data-testid="stSidebar"] {
-        background-color: #111111 !important;
-        border-right: 1px solid #222222;
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #EAEAEA;
     }
     [data-testid="stSidebar"] * {
-        color: #FFFFFF !important; 
+        color: #111111 !important; 
     }
     
     /* 사이드바 여닫기 버튼 가시성 완벽 확보 */
@@ -53,8 +53,8 @@ st.markdown("""
         color: #111111 !important;
     }
     [data-testid="stSidebar"] button[kind="header"] svg {
-        fill: #FFFFFF !important;
-        color: #FFFFFF !important;
+        fill: #111111 !important;
+        color: #111111 !important;
     }
     
     /* 메트릭 카드 */
@@ -101,21 +101,21 @@ st.markdown("""
         border: 1px solid #CCCCCC !important;
     }
     
-    /* 드롭다운 팝업 리스트 색반전 (다크 배경 + 화이트 텍스트) */
+    /* 드롭다운 팝업 리스트 화이트 배경 강제 고정 */
     div[data-baseweb="popover"], 
     div[data-baseweb="popover"] > div,
     div[data-baseweb="menu"], 
     ul[role="listbox"] {
-        background-color: #111111 !important;
-        border: 1px solid #333333 !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #CCCCCC !important;
     }
     li[role="option"], li[role="option"] span, li[role="option"] div {
-        background-color: #111111 !important;
-        color: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+        color: #111111 !important;
     }
     li[role="option"]:hover, li[role="option"]:hover span, li[role="option"]:hover div {
-        background-color: #D32F2F !important;
-        color: #FFFFFF !important;
+        background-color: #F4F6F8 !important;
+        color: #D32F2F !important;
     }
 
     /* Expander 디자인 */
@@ -172,7 +172,7 @@ def check_password():
             """, unsafe_allow_html=True)
             st.text_input("본사 직원 인증 코드를 입력하십시오.", type="password", on_change=password_entered, key="password", placeholder="비밀번호 입력 후 엔터")
             if "password_correct" in st.session_state and not st.session_state["password_correct"]:
-                st.error("[오류] 인증 코드가 일치하지 않습니다.")
+                st.error("인증 코드가 일치하지 않습니다.")
         return False
     else:
         st.markdown("<style>[data-testid='block-container'] { animation: suckIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }</style>", unsafe_allow_html=True)
@@ -228,11 +228,11 @@ full_store_list = load_store_list() or sorted(df['매장명'].unique().tolist())
 # 4. 사이드바 메뉴 (단일 메뉴 구성)
 # ==========================================
 st.sidebar.markdown("""
-<div style="background-color: #FFFFFF; padding: 15px; border-radius: 8px; text-align: center; margin-top: 10px; margin-bottom: 20px;">
-    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 100%;">
+<div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
+    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 80%;">
 </div>
 """, unsafe_allow_html=True)
-st.sidebar.markdown("<p style='text-align: center; font-size: 13px; color: #CCCCCC !important; font-weight: 700;'>본사 통합 업무 포털</p>", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='text-align: center; font-size: 13px; color: #666666 !important; font-weight: 700;'>본사 통합 업무 포털</p>", unsafe_allow_html=True)
 
 st.sidebar.divider()
 st.sidebar.markdown("<p style='font-size: 15px; font-weight: 700;'>가맹점 리뷰 관리</p>", unsafe_allow_html=True)
@@ -262,7 +262,7 @@ with tab1:
     active_neg = df[(df['감정분석'] == '부정') & (~df['id'].isin(resolved_ids))]
     
     if not active_neg.empty:
-        st.error(f"[경고] 총 {len(active_neg)}건의 미조치 부정 리뷰가 있습니다.")
+        st.error(f"총 {len(active_neg)}건의 미조치 부정 리뷰가 있습니다.")
         for _, row in active_neg.iterrows():
             with st.expander(f"[{row['매장명']}] {row['작성일']} | {row['리뷰내용'][:30]}..."):
                 st.write(f"내용: {row['리뷰내용']}")
@@ -304,18 +304,20 @@ with tab2:
             m2.metric("긍정 평가", f"{len(s_df[s_df['감정분석'] == '긍정'])}건")
             m3.metric("부정 평가", f"{len(s_df[s_df['감정분석'] == '부정'])}건")
             
-            st.markdown("**일별 리뷰 발생 추이**")
-            fig_line = px.line(s_df.groupby('작성일').size().reset_index(name='건수'), x='작성일', y='건수', markers=True, color_discrete_sequence=['#D32F2F'])
-            # 💡 Plotly 꺾은선 그래프 축, 텍스트, 눈금선 색상 먹색 강제 고정
-            fig_line.update_layout(
+            st.markdown("**일별 리뷰 발생 건수**")
+            # 💡 꺾은선 대신 명확한 수치를 보여주는 막대 그래프(Bar Chart)로 교체 및 축 포맷 강제 지정
+            trend_df = s_df.groupby('작성일').size().reset_index(name='건수').sort_values(by='작성일')
+            fig_bar = px.bar(trend_df, x='작성일', y='건수', text='건수', color_discrete_sequence=['#D32F2F'])
+            fig_bar.update_traces(textposition='outside', textfont=dict(color='#111111', size=14))
+            fig_bar.update_layout(
                 margin=dict(t=20, b=20, l=0, r=0), 
                 paper_bgcolor="rgba(0,0,0,0)", 
                 plot_bgcolor="rgba(0,0,0,0)", 
                 font=dict(color="#111111"),
-                xaxis=dict(showgrid=True, gridcolor="#EAEAEA", tickfont=dict(color="#111111"), title_font=dict(color="#111111")),
-                yaxis=dict(showgrid=True, gridcolor="#EAEAEA", tickfont=dict(color="#111111"), title_font=dict(color="#111111"))
+                xaxis=dict(title="작성 일자", type='category', showgrid=False, tickfont=dict(color="#111111")),
+                yaxis=dict(title="리뷰 수(건)", showgrid=True, gridcolor="#EAEAEA", tickfont=dict(color="#111111"), dtick=1)
             )
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_bar, use_container_width=True)
             
             st.divider()
             st.markdown("### 수집 데이터 전수 검증 (원본 내역)")
