@@ -3,77 +3,155 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# 페이지 기본 설정
-st.set_page_config(page_title="프랜차이즈 가맹점 리뷰 관리", page_icon="🚨", layout="wide")
+# ==========================================
+# ⚙️ 1. 페이지 기본 설정 및 브랜드 CSS 주입
+# ==========================================
+st.set_page_config(page_title="달빛에구운고등어 평판관리", page_icon="🌙", layout="wide")
+
+# 브랜드 맞춤형 CSS (네이비 & 골드 테마)
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+    
+    html, body, [class*="css"]  {
+        font-family: 'Noto Sans KR', sans-serif !important;
+    }
+    
+    /* 전체 배경색 (아주 옅은 웜그레이) */
+    .stApp {
+        background-color: #F8F9FA;
+    }
+    
+    /* 사이드바 테마 (밤하늘 네이비) */
+    [data-testid="stSidebar"] {
+        background-color: #152238 !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+    }
+    
+    /* 제목 및 강조 텍스트 (네이비) */
+    h1, h2, h3 {
+        color: #152238 !important;
+        font-weight: 800 !important;
+    }
+    
+    /* 메트릭(숫자 요약) 카드 디자인 */
+    div[data-testid="metric-container"] {
+        background-color: #FFFFFF;
+        border: 1px solid #EAEAEA;
+        padding: 20px 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border-left: 6px solid #E8B923; /* 달빛 골드 포인트 */
+    }
+    
+    /* 로그인 박스 전용 디자인 */
+    .login-container {
+        background-color: #FFFFFF;
+        padding: 50px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        text-align: center;
+        border-top: 8px solid #E8B923;
+        margin-top: 50px;
+    }
+    .brand-title {
+        color: #152238;
+        font-size: 32px;
+        font-weight: 900;
+        margin-bottom: 10px;
+    }
+    .brand-subtitle {
+        color: #666666;
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+    
+    /* 버튼 디자인 (골드) */
+    .stButton > button {
+        background-color: #E8B923 !important;
+        color: #152238 !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        border: none !important;
+        height: 45px;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        background-color: #152238 !important;
+        color: #E8B923 !important;
+    }
+    
+    /* 데이터프레임 테두리 둥글게 */
+    [data-testid="stDataFrame"] {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+</style>
+""", unsafe_allow_html=True)
+
 
 # ==========================================
-# 🔒 보안 로그인 시스템 (사내 기밀 유지용)
+# 🔒 2. 브랜드 맞춤형 보안 로그인 시스템
 # ==========================================
 def check_password():
-    """비밀번호가 맞으면 True를 반환합니다."""
     def password_entered():
-        # 💡 직원 공용 비밀번호 변경: 51015
         if st.session_state["password"] == "51015":
             st.session_state["password_correct"] = True
-            del st.session_state["password"]  # 보안을 위해 세션에서 비밀번호 삭제
+            del st.session_state["password"]  
         else:
             st.session_state["password_correct"] = False
 
-    if "password_correct" not in st.session_state:
-        st.markdown("<h2 style='text-align: center; margin-top: 100px;'>🔒 본사 사내망 접근 (기밀)</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center;'>프랜차이즈 가맹점 평판 데이터는 외부 유출이 엄격히 금지됩니다.</p>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1, 1, 1])
+    if "password_correct" not in st.session_state or not st.session_state["password_correct"]:
+        col1, col2, col3 = st.columns([1, 1.5, 1])
         with col2:
-            st.text_input("직원 공용 비밀번호를 입력하세요", type="password", on_change=password_entered, key="password")
-        return False
-        
-    elif not st.session_state["password_correct"]:
-        st.markdown("<h2 style='text-align: center; margin-top: 100px;'>🔒 본사 사내망 접근 (기밀)</h2>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1, 1, 1])
-        with col2:
-            st.text_input("직원 공용 비밀번호를 입력하세요", type="password", on_change=password_entered, key="password")
-            st.error("❌ 비밀번호가 틀렸습니다.")
+            st.markdown("""
+            <div class="login-container">
+                <div class="brand-title">🌙 달빛에구운고등어</div>
+                <div class="brand-subtitle">가맹점 통합 평판관리 시스템 (본사 전용)</div>
+            </div>
+            """, unsafe_allow_html=True)
+            st.write("")
+            st.text_input("본사 직원 인증 코드를 입력하십시오.", type="password", on_change=password_entered, key="password")
+            
+            if "password_correct" in st.session_state and not st.session_state["password_correct"]:
+                st.error("❌ 인증 코드가 일치하지 않습니다.")
         return False
     else:
         return True
 
-# 비밀번호를 통과하지 못하면 여기서 대시보드 화면 송출을 멈춥니다.
 if not check_password():
     st.stop()
 
+
 # ==========================================
-# 📊 대시보드 본문 (인증된 직원만 볼 수 있음)
+# 📊 3. 대시보드 본문 (인증된 직원 전용)
 # ==========================================
 def load_data():
-    # 💡 과거 데이터 유실 방지 로직: 어제 수집한 파일과 누적 파일을 모두 불러와서 합칩니다.
     filename_new = "가맹점_리뷰수집결과_누적.csv"
     filename_old = "가맹점_리뷰수집결과_20260325.csv"
     
     df_list = []
-    
-    # 1. 어제 파일이 있으면 리스트에 추가
     if os.path.exists(filename_old):
         df_list.append(pd.read_csv(filename_old))
-        
-    # 2. 오늘부터 쌓일 누적 파일이 있으면 리스트에 추가
     if os.path.exists(filename_new):
         df_list.append(pd.read_csv(filename_new))
         
-    # 3. 파일이 하나라도 존재하면 합치고 중복 제거
     if df_list:
         df = pd.concat(df_list, ignore_index=True)
         df.drop_duplicates(subset=['매장명', '작성일', '리뷰내용'], keep='last', inplace=True)
         return df
     else:
-        st.warning("현재 수집된 데이터 파일이 없어 샘플 화면을 보여드립니다.")
+        # 데이터가 없을 때의 UI용 샘플
         data = {
-            "매장명": ["파주심학산점", "강남역점", "강남역점", "홍대점", "부산서면점"],
-            "작성일": ["2026-03-26", "2026-03-26", "2026-03-26", "2026-03-26", "2026-03-26"],
-            "리뷰내용": ["고등어가 너무 맛있어요!", "직원 불친절하네요.", "늦게 나와서 화났음.", "가성비 최고", "매장이 청결해요"],
-            "감정분석": ["긍정", "부정", "부정", "긍정", "긍정"]
+            "매장명": ["달빛에구운고등어 심학산점", "달빛에구운고등어 강남점"],
+            "작성일": ["2026-03-26", "2026-03-26"],
+            "리뷰내용": ["고등어가 겉바속촉 너무 맛있어요!", "직원분 응대가 조금 아쉬웠습니다."],
+            "감정분석": ["긍정", "부정"]
         }
-        df = pd.DataFrame(data)
-    return df
+        return pd.DataFrame(data)
 
 def load_store_list():
     excel_file = "가맹점_리뷰링크.xlsx"
@@ -82,8 +160,7 @@ def load_store_list():
             store_df = pd.read_excel(excel_file)
             if '매장명' in store_df.columns:
                 return sorted(store_df['매장명'].dropna().unique().tolist())
-        except Exception as e:
-            pass
+        except: pass
     return []
 
 df = load_data()
@@ -91,68 +168,79 @@ full_store_list = load_store_list()
 if not full_store_list:
     full_store_list = sorted(df['매장명'].unique().tolist()) if not df.empty else ["매장 없음"]
 
-st.sidebar.title("👨‍💼 가맹점 관리 비서")
-st.sidebar.markdown("과장님 및 본사 직원 전용 패널")
-
-menu = st.sidebar.radio("분석 모드", ["🌐 1. 전체 브랜드 누적 평판", "🏪 2. 개별 가맹점 돋보기 분석"])
+# 사이드바 (메뉴)
+st.sidebar.markdown("<h2 style='color: #E8B923 !important; text-align: center;'>🌙 달빛 비서</h2>", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='text-align: center; font-size: 14px; opacity: 0.8;'>가맹관리팀 전용 패널</p>", unsafe_allow_html=True)
 st.sidebar.divider()
 
-if st.sidebar.button("🔄 최신 데이터 새로고침"):
+menu = st.sidebar.radio("🔎 분석 메뉴 선택", ["전체 브랜드 평판 현황", "개별 가맹점 집중 분석"])
+st.sidebar.divider()
+
+if st.sidebar.button("🔄 최신 데이터 동기화"):
     st.rerun()
     
-st.sidebar.info("💡 **슈퍼바이저 활용 팁**\n\n'위험 감지' 탭에 뜬 매장 점주님들께 가장 먼저 오전 해피콜을 진행하시면 CS 방어에 효과적입니다.")
+st.sidebar.info("💡 **슈퍼바이저 업무 팁**\n\n'위험 감지' 리스트에 노출된 매장은 익일 오전 해피콜 및 신규 발주 확인 시 우선순위로 배정하십시오.")
 
-if menu == "🌐 1. 전체 브랜드 누적 평판":
-    st.title("🌐 전체 가맹점 누적 평판 & 리스크 리포트")
-    st.subheader("🚨 긴급 연락 요망 매장 (최근 부정 리뷰 감지)")
+# ------------------------------------------
+# 메뉴 1. 전체 브랜드 평판
+# ------------------------------------------
+if menu == "전체 브랜드 평판 현황":
+    st.markdown("<h1>전체 가맹점 평판 리포트 <span style='font-size: 20px; color: #888;'>| Daily Dashboard</span></h1>", unsafe_allow_html=True)
     
+    st.markdown("<h3 style='margin-top: 30px; color: #D32F2F !important;'>🚨 즉각 조치 요망 매장 (CS 리스크 감지)</h3>", unsafe_allow_html=True)
     negative_df = df[df['감정분석'] == '부정']
+    
     if not negative_df.empty:
-        st.error(f"⚠️ **{len(negative_df)}건**의 부정/불만 리뷰가 감지되었습니다. 아래 리스트를 확인하시고 점주님들께 연락해 주십시오.")
+        st.error(f"⚠️ **총 {len(negative_df)}건**의 부정/불만 리뷰가 감지되었습니다. 아래 내역을 확인하고 해당 점주님께 연락해 주십시오.")
         st.dataframe(negative_df[['매장명', '리뷰내용', '작성일']].sort_values(by='작성일', ascending=False).reset_index(drop=True), use_container_width=True)
     else:
-        st.success("🎉 감지된 부정/불만 리뷰가 한 건도 없습니다. 가맹점 현장 관리가 아주 훌륭하게 이루어지고 있습니다!")
+        st.success("🎉 현재 감지된 부정/불만 리뷰가 없습니다. 전체 가맹점의 서비스 품질이 우수하게 유지되고 있습니다.")
         
     st.divider()
-    st.subheader("📊 누적 리뷰 발생량 분석 (Top & Bottom)")
     
+    st.markdown("<h3 style='margin-top: 30px;'>📊 누적 고객 반응 모니터링</h3>", unsafe_allow_html=True)
     review_counts = df['매장명'].value_counts().reset_index()
     review_counts.columns = ['매장명', '누적 리뷰 수']
     
     col_top, col_bottom = st.columns(2)
     with col_top:
-        st.info("🔥 리뷰 활성 매장 (고객 반응 폭발)")
+        st.info("🔥 고객 반응 우수 매장 (리뷰 활성화)")
         st.dataframe(review_counts.head(5), use_container_width=True)
     with col_bottom:
-        st.warning("❄️ 리뷰 저조 매장 (마케팅/이벤트 점검 필요)")
+        st.warning("❄️ 리뷰 관리 필요 매장 (온라인 홍보 저조)")
         st.dataframe(review_counts.tail(5).sort_values(by='누적 리뷰 수', ascending=True).reset_index(drop=True), use_container_width=True)
 
+# ------------------------------------------
+# 메뉴 2. 개별 가맹점 분석
+# ------------------------------------------
 else:
-    st.title("🏪 개별 가맹점 상세 분석 (누적)")
-    selected_store = st.selectbox("📌 분석하실 특정 가맹점을 선택하십시오", full_store_list)
+    st.markdown("<h1>가맹점 상세 분석 <span style='font-size: 20px; color: #888;'>| Store Details</span></h1>", unsafe_allow_html=True)
+    selected_store = st.selectbox("📌 집중 분석할 매장을 선택하십시오", full_store_list)
+    
     store_df = df[df['매장명'] == selected_store]
-    st.subheader(f"[{selected_store}] 고객 반응 누적 요약")
     
     if store_df.empty:
-        st.success(f"✅ 수집된 리뷰가 없습니다. 평시와 동일하게 관리해주시면 됩니다.")
+        st.info(f"ℹ️ 아직 [{selected_store}]에 수집된 누적 리뷰 데이터가 없습니다.")
     else:
+        st.markdown(f"<h3 style='margin-top: 20px; color: #152238;'>[{selected_store}] 고객 반응 요약</h3>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
-        with col1: st.metric("누적 총 리뷰", f"{len(store_df)}건")
-        with col2: st.metric("긍정 평가 (칭찬/추천)", f"{len(store_df[store_df['감정분석'] == '긍정'])}건")
-        with col3: st.metric("부정 평가 (불만/개선)", f"{len(store_df[store_df['감정분석'] == '부정'])}건")
+        with col1: st.metric("누적 전체 리뷰", f"{len(store_df)}건")
+        with col2: st.metric("긍정 평가 (맛/서비스 만족)", f"{len(store_df[store_df['감정분석'] == '긍정'])}건")
+        with col3: st.metric("부정 평가 (개선 필요)", f"{len(store_df[store_df['감정분석'] == '부정'])}건")
             
         st.divider()
         col_chart, col_list = st.columns([1, 2])
         
         with col_chart:
-            st.markdown("**누적 감정 비율**")
+            st.markdown("<b style='color: #152238; font-size: 18px;'>누적 감정 비율</b>", unsafe_allow_html=True)
             sentiment_counts = store_df['감정분석'].value_counts().reset_index()
             sentiment_counts.columns = ['감정', '비율']
-            fig = px.pie(sentiment_counts, values='비율', names='감정', color='감정', color_discrete_map={'긍정':'#00CC96', '부정':'#EF553B', '중립':'#636EFA'})
-            fig.update_layout(margin=dict(t=0, b=0, l=0, r=0))
+            # 차트 색상: 긍정(안정적인 초록), 부정(명확한 경고 빨강), 중립(회색)
+            fig = px.pie(sentiment_counts, values='비율', names='감정', color='감정', color_discrete_map={'긍정':'#2E7D32', '부정':'#D32F2F', '중립':'#9E9E9E'})
+            fig.update_layout(margin=dict(t=20, b=0, l=0, r=0))
             st.plotly_chart(fig, use_container_width=True)
             
         with col_list:
-            st.markdown("**해당 매장 누적 리뷰 상세 내역**")
+            st.markdown("<b style='color: #152238; font-size: 18px;'>최신 리뷰 상세 내역</b>", unsafe_allow_html=True)
             display_df = store_df[['작성일', '감정분석', '리뷰내용']].sort_values(by='작성일', ascending=False).reset_index(drop=True)
             st.dataframe(display_df, use_container_width=True)
