@@ -164,7 +164,7 @@ def check_password():
             st.markdown("""
             <div class="login-wrapper">
                 <div class="login-container">
-                    <img src="https://dalbitgo.com/images/main_logo.png" style="height: 60px; object-fit: contain;">
+                    <img src="https://dalbitgo.com/images/main_logo.png" style="height: 60px; object-fit: contain; filter: invert(1) hue-rotate(180deg);">
                     <div class="brand-title">리뷰 관리 프로그램</div>
                     <div class="brand-subtitle">프리미엄 450°C 화덕 생선구이 전문점</div>
                 </div>
@@ -229,7 +229,7 @@ full_store_list = load_store_list() or sorted(df['매장명'].unique().tolist())
 # ==========================================
 st.sidebar.markdown("""
 <div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
-    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 80%;">
+    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 80%; filter: invert(1) hue-rotate(180deg);">
 </div>
 """, unsafe_allow_html=True)
 st.sidebar.markdown("<p style='text-align: center; font-size: 13px; color: #666666 !important; font-weight: 700;'>본사 통합 업무 포털</p>", unsafe_allow_html=True)
@@ -305,7 +305,6 @@ with tab2:
             m3.metric("부정 평가", f"{len(s_df[s_df['감정분석'] == '부정'])}건")
             
             st.markdown("**일별 리뷰 발생 건수**")
-            # 💡 꺾은선 대신 명확한 수치를 보여주는 막대 그래프(Bar Chart)로 교체 및 축 포맷 강제 지정
             trend_df = s_df.groupby('작성일').size().reset_index(name='건수').sort_values(by='작성일')
             fig_bar = px.bar(trend_df, x='작성일', y='건수', text='건수', color_discrete_sequence=['#D32F2F'])
             fig_bar.update_traces(textposition='outside', textfont=dict(color='#111111', size=14))
