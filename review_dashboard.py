@@ -8,7 +8,7 @@ import os
 # ==========================================
 st.set_page_config(page_title="달빛에구운고등어 평판관리", page_icon="🐟", layout="wide")
 
-# (주)새모양에프앤비 - 달빛에구운고등어 공식 홈페이지 기반 CSS
+# (주)새모양에프앤비 - 프리미엄 B2B 어드민 UI 적용
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap');
@@ -23,68 +23,110 @@ st.markdown("""
         color: #111111 !important;
     }
     
+    /* 전체 배경: 깨끗하고 전문적인 라이트 그레이 */
     .stApp {
-        background-color: #F9F9F9;
+        background-color: #F4F6F8;
     }
     
+    /* 사이드바: 깨끗한 화이트로 변경하여 로고와 자연스럽게 어우러지게 함 */
     [data-testid="stSidebar"] {
-        background-color: #111111 !important;
-        border-right: 1px solid #333333;
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #EAEAEA;
     }
     [data-testid="stSidebar"] * {
-        color: #FFFFFF !important;
+        color: #333333 !important; /* 글씨를 진한 회색/검정으로 변경 */
     }
     
+    /* 상단 요약 카드 디자인 */
     div[data-testid="metric-container"] {
         background-color: #FFFFFF;
         border: 1px solid #EAEAEA;
         padding: 20px 25px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         border-left: 5px solid #D32F2F; 
     }
     
-    /* 로그인 박스 디자인 개선 */
+    /* 💡 완벽하게 비율이 조정된 프리미엄 로그인 박스 */
+    .login-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 8vh;
+        margin-bottom: 2vh;
+    }
     .login-container {
         background-color: #FFFFFF;
-        padding: 30px; 
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        padding: 40px 50px; 
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
         text-align: center;
-        border-top: 4px solid #D32F2F;
-        margin-top: 5vh;
-        margin-bottom: 20px;
+        border-top: 5px solid #D32F2F;
+        width: 100%;
     }
     .brand-title {
         color: #111111;
-        font-size: 28px;
+        font-size: 24px;
+        margin-top: 15px;
         margin-bottom: 5px;
     }
     .brand-subtitle {
-        color: #666666;
-        font-size: 14px;
-        margin-bottom: 5px;
-        font-weight: 500;
+        color: #888888;
+        font-size: 13px;
+        margin-bottom: 30px;
+        font-weight: 400;
     }
     
+    /* 버튼 통합 디자인 (고급스러운 레드) */
     .stButton > button {
         background-color: #D32F2F !important;
         color: #FFFFFF !important;
         font-weight: 700 !important;
-        border-radius: 5px !important;
+        border-radius: 6px !important;
         border: none !important;
-        height: 40px;
+        height: 42px;
         transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(211,47,47,0.2);
     }
     .stButton > button:hover {
-        background-color: #111111 !important;
-        color: #FFFFFF !important;
+        background-color: #B71C1C !important;
+        box-shadow: 0 4px 8px rgba(211,47,47,0.3);
     }
     
+    /* 데이터프레임 테두리 깔끔하게 */
     [data-testid="stDataFrame"] {
         border-radius: 8px;
         overflow: hidden;
         border: 1px solid #EAEAEA;
+        background-color: #FFFFFF;
+    }
+
+    /* 💡 To-Do 리스트 전용 프리미엄 카드 UI (촌스러운 노란 박스 제거) */
+    .review-card {
+        background-color: #FFFFFF;
+        border: 1px solid #EAEAEA;
+        border-left: 4px solid #D32F2F;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .review-card-header {
+        font-weight: 700;
+        color: #111111;
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    .review-card-date {
+        font-weight: 400;
+        color: #888888;
+        font-size: 13px;
+        margin-left: 10px;
+    }
+    .review-card-body {
+        color: #444444;
+        font-size: 15px;
+        line-height: 1.6;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -102,14 +144,17 @@ def check_password():
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state or not st.session_state["password_correct"]:
-        col1, col2, col3 = st.columns([1.5, 1.2, 1.5])
+        # 로그인 창 폭을 최적화
+        col1, col2, col3 = st.columns([1, 1.2, 1])
         with col2:
             st.markdown("""
-            <div class="login-container">
-                <!-- 원본 로고 그대로 사용 -->
-                <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 160px; margin-bottom: 15px;">
-                <div class="brand-subtitle">프리미엄 450°C 화덕 생선구이 전문점</div>
-                <div class="brand-title">본사 통합 평판관리</div>
+            <div class="login-wrapper">
+                <div class="login-container">
+                    <!-- 💡 로고와 텍스트의 황금 비율 적용 -->
+                    <img src="https://dalbitgo.com/images/main_logo.png" style="height: 55px; object-fit: contain;">
+                    <div class="brand-title">본사 통합 평판관리</div>
+                    <div class="brand-subtitle">프리미엄 450°C 화덕 생선구이 전문점</div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -147,6 +192,7 @@ def load_data():
         df.drop_duplicates(subset=['매장명', '작성일', '리뷰내용'], keep='last', inplace=True)
         return df
     else:
+        # 데이터가 없을 때의 UI용 샘플
         data = {
             "매장명": ["달빛에구운고등어 어양점", "달빛에구운고등어 첨단점", "달빛에구운고등어 군산미장점"],
             "작성일": ["2026-03-26", "2026-03-26", "2026-03-26"],
@@ -170,19 +216,19 @@ full_store_list = load_store_list()
 if not full_store_list:
     full_store_list = sorted(df['매장명'].unique().tolist()) if not df.empty else ["매장 없음"]
 
-# 사이드바 (로고 하얀색 깨짐 현상 완벽 복구 - 배경을 하얗게 깔아 원본 보존)
+# 💡 사이드바: 화이트 톤으로 변경하여 로고 원본 색상이 완벽하게 표현됨
 st.sidebar.markdown("""
-<div style="background-color: white; padding: 15px; border-radius: 8px; text-align: center; margin-top: 10px; margin-bottom: 20px;">
-    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 100%;">
+<div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
+    <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 80%;">
 </div>
 """, unsafe_allow_html=True)
-st.sidebar.markdown("<p style='text-align: center; font-size: 13px; color: #AAAAAA !important;'>가맹관리팀 슈퍼바이저 패널</p>", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='text-align: center; font-size: 13px; color: #666666 !important; font-weight: 500;'>가맹관리팀 슈퍼바이저 패널</p>", unsafe_allow_html=True)
 st.sidebar.divider()
 
 menu = st.sidebar.radio("🔎 데이터 분석 메뉴", ["전체 브랜드 평판 현황", "개별 가맹점 집중 분석"])
 st.sidebar.divider()
 
-if st.sidebar.button("🔄 최신 데이터 동기화"):
+if st.sidebar.button("🔄 최신 데이터 동기화", use_container_width=True):
     st.rerun()
 
 st.sidebar.write("")
@@ -204,24 +250,32 @@ st.sidebar.markdown("""
 if menu == "전체 브랜드 평판 현황":
     st.markdown("<h1>전체 가맹점 평판 리포트 <span style='font-size: 18px; color: #999;'>| Daily Dashboard</span></h1>", unsafe_allow_html=True)
     
-    st.markdown("<h3 style='margin-top: 30px; color: #D32F2F !important;'>🚨 즉각 조치 요망 매장 (To-Do List)</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='margin-top: 30px; color: #111111 !important;'>🚨 즉각 조치 요망 매장 (To-Do List)</h3>", unsafe_allow_html=True)
     
     # 부정 리뷰 추출 및 조치 완료된 항목 필터링
     negative_df = df[df['감정분석'] == '부정'].copy()
     active_negative_df = negative_df[~negative_df.index.isin(st.session_state.resolved_reviews)]
     
     if not active_negative_df.empty:
-        st.error(f"⚠️ **총 {len(active_negative_df)}건**의 부정/불만 리뷰가 남아있습니다. 해피콜 조치 후 '완료' 버튼을 눌러주십시오.")
+        st.markdown(f"<div style='color: #D32F2F; font-size: 15px; margin-bottom: 15px;'>⚠️ <b>총 {len(active_negative_df)}건</b>의 부정/불만 리뷰가 남아있습니다. 해피콜 조치 후 '완료' 버튼을 눌러주십시오.</div>", unsafe_allow_html=True)
         
-        # 리뷰를 하나씩 띄워주고 '조치완료' 버튼 제공
+        # 💡 촌스러운 노란 박스(st.warning)를 버리고, CSS로 만든 프리미엄 카드 UI 적용
         for idx, row in active_negative_df.iterrows():
             with st.container():
-                col_text, col_btn = st.columns([0.85, 0.15])
+                col_text, col_btn = st.columns([0.88, 0.12])
                 with col_text:
-                    st.warning(f"**[{row['매장명']}]** {row['작성일']} \n\n 💬 {row['리뷰내용']}")
+                    st.markdown(f"""
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            [{row['매장명']}] <span class="review-card-date">{row['작성일']}</span>
+                        </div>
+                        <div class="review-card-body">💬 {row['리뷰내용']}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                 with col_btn:
                     st.write("") 
-                    if st.button("✅ 조치 완료", key=f"resolve_{idx}"):
+                    st.write("") 
+                    if st.button("✅ 조치 완료", key=f"resolve_{idx}", use_container_width=True):
                         st.session_state.resolved_reviews.append(idx)
                         st.rerun() 
     else:
@@ -235,20 +289,21 @@ if menu == "전체 브랜드 평판 현황":
     
     col_top, col_bottom = st.columns(2)
     with col_top:
-        st.info("🔥 고객 반응 우수 매장 (리뷰 활성화)")
+        st.markdown("<b style='font-size: 16px; color: #2E7D32;'>🔥 고객 반응 우수 매장 (리뷰 활성화)</b>", unsafe_allow_html=True)
         st.dataframe(review_counts.head(5), use_container_width=True)
     with col_bottom:
-        st.warning("❄️ 리뷰 관리 필요 매장 (온라인 홍보 저조)")
+        st.markdown("<b style='font-size: 16px; color: #D32F2F;'>❄️ 리뷰 관리 필요 매장 (온라인 홍보 저조)</b>", unsafe_allow_html=True)
         st.dataframe(review_counts.tail(5).sort_values(by='누적 리뷰 수', ascending=True).reset_index(drop=True), use_container_width=True)
 
 # ------------------------------------------
-# 메뉴 2. 개별 가맹점 분석 (차트 에러 완벽 복구)
+# 메뉴 2. 개별 가맹점 분석
 # ------------------------------------------
 else:
     st.markdown("<h1>가맹점 상세 분석 <span style='font-size: 18px; color: #999;'>| Store Details</span></h1>", unsafe_allow_html=True)
     
-    # 검색 기능 추가
-    search_query = st.text_input("🔍 매장명 검색 (예: 첨단, 어양)", placeholder="검색할 매장 이름을 입력하세요")
+    # 검색 기능
+    st.markdown("<div style='margin-top: 20px; margin-bottom: -15px;'><b style='font-size: 14px; color: #666;'>🔍 매장명 검색</b></div>", unsafe_allow_html=True)
+    search_query = st.text_input(" ", placeholder="예: 첨단, 어양 (검색 즉시 아래 목록이 필터링됩니다)")
     
     if search_query:
         # 띄어쓰기 무시하고 검색어 포함 여부 확인
@@ -266,7 +321,7 @@ else:
         if store_df.empty:
             st.info(f"ℹ️ 아직 [{selected_store}]에 수집된 누적 리뷰 데이터가 없습니다.")
         else:
-            st.markdown(f"<h3 style='margin-top: 20px;'>[{selected_store}] 고객 반응 요약</h3>", unsafe_allow_html=True)
+            st.markdown(f"<h3 style='margin-top: 30px; margin-bottom: 20px;'>[{selected_store}] 고객 반응 요약</h3>", unsafe_allow_html=True)
             col1, col2, col3 = st.columns(3)
             with col1: st.metric("누적 전체 리뷰", f"{len(store_df)}건")
             with col2: st.metric("긍정 평가 (맛/서비스 만족)", f"{len(store_df[store_df['감정분석'] == '긍정'])}건")
@@ -274,7 +329,6 @@ else:
             
             st.divider()
             
-            # 💡 실수로 지워졌던 차트/리스트 출력 영역 복구
             col_chart, col_list = st.columns([1, 2])
             
             with col_chart:
@@ -282,7 +336,7 @@ else:
                 sentiment_counts = store_df['감정분석'].value_counts().reset_index()
                 sentiment_counts.columns = ['감정', '비율']
                 fig = px.pie(sentiment_counts, values='비율', names='감정', color='감정', color_discrete_map={'긍정':'#111111', '부정':'#D32F2F', '중립':'#AAAAAA'})
-                fig.update_layout(margin=dict(t=20, b=0, l=0, r=0))
+                fig.update_layout(margin=dict(t=20, b=0, l=0, r=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
                 st.plotly_chart(fig, use_container_width=True)
                 
             with col_list:
