@@ -113,7 +113,7 @@ if st.session_state.theme == "dark":
         [data-testid="stDataFrame"] { border-radius: 4px; overflow: hidden; border: 1px solid #333333 !important; background-color: #222222 !important; }
         
         .main-btn .stButton > button { background-color: #333333 !important; }
-        .main-btn .stButton > button * { color: #FFFFFF !important; }
+        .main-btn .stButton > button *, .main-btn .stButton > button p { color: #FFFFFF !important; }
         .main-btn .stButton > button:hover { background-color: #555555 !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -146,7 +146,7 @@ else:
         [data-testid="stDataFrame"] { border-radius: 4px; overflow: hidden; border: 1px solid #E0E0E0 !important; background-color: #FFFFFF !important; }
         
         .main-btn .stButton > button { background-color: #111111 !important; }
-        .main-btn .stButton > button * { color: #FFFFFF !important; }
+        .main-btn .stButton > button *, .main-btn .stButton > button p { color: #FFFFFF !important; }
         .main-btn .stButton > button:hover { background-color: #333333 !important; }
     </style>
     """, unsafe_allow_html=True)
