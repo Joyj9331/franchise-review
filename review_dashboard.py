@@ -7,10 +7,16 @@ import re
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. 페이지 기본 설정 및 메인 CSS 주입
+# 1. 페이지 기본 설정 및 상태 초기화
 # ==========================================
 st.set_page_config(page_title="달빛에구운고등어 본사 인트라넷", layout="wide")
 
+if "theme" not in st.session_state:
+    st.session_state.theme = "light"
+
+# ==========================================
+# 2. 공통 CSS (폰트, 사이드바, 공통 디자인)
+# ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap');
@@ -24,22 +30,18 @@ st.markdown("""
         font-weight: 700 !important;
     }
     
-    /* 🌟 메인 화면 배경 (밝은 그레이) 및 기본 텍스트 색상 */
-    .stApp { background-color: #F8F9FA; }
-    h1, h2, h3, h4, h5, h6, p, label, span { color: #111111 !important; }
-    
-    /* 🌟 사이드바 블랙 모드 스타일링 */
+    /* 🌟 사이드바는 모드 상관없이 무조건 블랙 고정 */
     [data-testid="stSidebar"] {
         background-color: #111111 !important;
         border-right: none !important;
     }
-    /* 사이드바 내 모든 텍스트 하얀색 강제 적용 */
     [data-testid="stSidebar"] p, 
     [data-testid="stSidebar"] span, 
     [data-testid="stSidebar"] div {
         color: #FFFFFF !important; 
     }
-    /* 사이드바 하얀색 버튼 */
+    
+    /* 사이드바 하얀색 테마 버튼 */
     [data-testid="stSidebar"] .stButton > button {
         background-color: #FFFFFF !important;
         border-radius: 4px !important;
@@ -54,7 +56,7 @@ st.markdown("""
         background-color: #E0E0E0 !important;
     }
 
-    /* 🌟 드롭다운 리스트 블랙 바탕 & 하얀 글씨 */
+    /* 드롭다운 리스트 블랙 고정 */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
         background-color: #111111 !important;
         border: 1px solid #333333 !important;
@@ -64,73 +66,103 @@ st.markdown("""
     li[role="option"]:hover { background-color: #333333 !important; color: #FFFFFF !important; }
     li[role="option"][aria-selected="true"] { background-color: #D32F2F !important; color: #FFFFFF !important; }
 
-    /* 🌟 "Press Enter to apply" 숨김 처리 (전역 적용) */
+    /* "Press Enter to apply" 숨김 처리 */
     div[data-testid="InputInstructions"] { display: none !important; }
-
-    /* 메인 화면 메트릭/입력창 플랫 디자인 */
-    div[data-testid="metric-container"] {
-        background-color: #FFFFFF; border: 1px solid #E0E0E0;
-        padding: 20px 25px; border-radius: 4px; border-left: 4px solid #D32F2F; 
-    }
-    div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .stTextInput input {
-        background-color: #FFFFFF !important; color: #111111 !important;
-        -webkit-text-fill-color: #111111 !important; border: 1px solid #CCCCCC !important; border-radius: 4px !important;
-    }
-    div[data-baseweb="input"] > div:focus-within, .stTextInput input:focus {
-        border-color: #111111 !important; box-shadow: none !important;
-    }
     
-    div[data-testid="stExpander"] {
-        background-color: #FFFFFF !important; border-radius: 4px; border: 1px solid #E0E0E0; border-left: 3px solid #D32F2F;
-    }
-    div[data-testid="stExpander"] summary { background-color: transparent !important; }
-    div[data-testid="stExpander"] summary p { font-weight: 600 !important; }
-
-    /* 메인 화면 전문성 있는 버튼 */
+    /* 메인 화면 버튼 공통 */
     .main-btn .stButton > button {
-        background-color: #111111 !important; border-radius: 4px !important; border: none !important; height: 42px;
+        border-radius: 4px !important; border: none !important; height: 42px;
     }
-    .main-btn .stButton > button * { color: #FFFFFF !important; font-weight: 700 !important; }
-    .main-btn .stButton > button:hover { background-color: #333333 !important; }
+    .main-btn .stButton > button * { font-weight: 700 !important; }
     
-    /* 폼 컨테이너 선명하게 */
+    /* 폼 컨테이너 클리어 */
     [data-testid="stForm"] { border: none !important; padding: 0 !important; background-color: transparent !important; }
-    [data-testid="stDataFrame"] { border-radius: 4px; overflow: hidden; border: 1px solid #E0E0E0; background-color: #FFFFFF; }
-
-    /* 🌟 은닉된 동기화 버튼 디자인 */
-    .hidden-sync-btn .stButton > button {
-        background-color: transparent !important;
-        color: #CCCCCC !important;
-        border: none !important;
-        font-size: 12px !important;
-        height: auto;
-        padding: 5px 10px;
-    }
-    .hidden-sync-btn .stButton > button * {
-        color: #CCCCCC !important;
-        font-weight: 400 !important;
-    }
-    .hidden-sync-btn .stButton > button:hover * {
-        color: #888888 !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. 보안 로그인 시스템 (풀스크린 블랙 / 로고 모션 / 콤팩트 인풋)
+# 3. 다크/라이트 모드 테마 CSS 동적 주입
+# ==========================================
+if st.session_state.theme == "dark":
+    st.markdown("""
+    <style>
+        .stApp { background-color: #1A1A1A !important; }
+        h1, h2, h3, h4, h5, h6, p, label, span { color: #F0F0F0 !important; }
+        
+        div[data-testid="metric-container"] {
+            background-color: #222222 !important; border: 1px solid #333333 !important;
+            padding: 20px 25px; border-radius: 4px; border-left: 4px solid #D32F2F !important; 
+        }
+        
+        div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .stTextInput input {
+            background-color: #222222 !important; color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important; border: 1px solid #444444 !important; border-radius: 4px !important;
+        }
+        div[data-baseweb="input"] > div:focus-within, .stTextInput input:focus {
+            border-color: #888888 !important;
+        }
+        
+        div[data-testid="stExpander"] {
+            background-color: #222222 !important; border-radius: 4px; border: 1px solid #333333 !important; border-left: 3px solid #D32F2F !important;
+        }
+        div[data-testid="stExpander"] summary { background-color: transparent !important; }
+        div[data-testid="stExpander"] summary p { font-weight: 600 !important; color: #F0F0F0 !important; }
+        
+        [data-testid="stDataFrame"] { border-radius: 4px; overflow: hidden; border: 1px solid #333333 !important; background-color: #222222 !important; }
+        
+        .main-btn .stButton > button { background-color: #333333 !important; }
+        .main-btn .stButton > button * { color: #FFFFFF !important; }
+        .main-btn .stButton > button:hover { background-color: #555555 !important; }
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <style>
+        .stApp { background-color: #F8F9FA !important; }
+        h1, h2, h3, h4, h5, h6, p, label, span { color: #111111 !important; }
+        
+        div[data-testid="metric-container"] {
+            background-color: #FFFFFF !important; border: 1px solid #E0E0E0 !important;
+            padding: 20px 25px; border-radius: 4px; border-left: 4px solid #D32F2F !important; 
+        }
+        
+        div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .stTextInput input {
+            background-color: #FFFFFF !important; color: #111111 !important;
+            -webkit-text-fill-color: #111111 !important; border: 1px solid #CCCCCC !important; border-radius: 4px !important;
+        }
+        div[data-baseweb="input"] > div:focus-within, .stTextInput input:focus {
+            border-color: #111111 !important;
+        }
+        
+        div[data-testid="stExpander"] {
+            background-color: #FFFFFF !important; border-radius: 4px; border: 1px solid #E0E0E0 !important; border-left: 3px solid #D32F2F !important;
+        }
+        div[data-testid="stExpander"] summary { background-color: transparent !important; }
+        div[data-testid="stExpander"] summary p { font-weight: 600 !important; color: #111111 !important; }
+        
+        [data-testid="stDataFrame"] { border-radius: 4px; overflow: hidden; border: 1px solid #E0E0E0 !important; background-color: #FFFFFF !important; }
+        
+        .main-btn .stButton > button { background-color: #111111 !important; }
+        .main-btn .stButton > button * { color: #FFFFFF !important; }
+        .main-btn .stButton > button:hover { background-color: #333333 !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+# ==========================================
+# 4. 보안 로그인 시스템
 # ==========================================
 def check_password():
     if "password_correct" in st.session_state and st.session_state["password_correct"]:
         return True
 
-    # 로그인 화면 전용 전체화면 블랙 CSS 주입
+    # 로그인 화면 전용 전체화면 블랙 CSS
     st.markdown("""
     <style>
         .stApp { background-color: #000000 !important; }
         [data-testid="stHeader"] { display: none !important; }
         [data-testid="stSidebar"] { display: none !important; }
         
-        /* 🌟 [요청1] 로고 페이드인 & 스케일 애니메이션 */
         @keyframes logoZoomIn {
             0% { transform: scale(3.5); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -142,9 +174,9 @@ def check_password():
             display: block;
         }
         
-        /* 🌟 [요청2] 인증코드 폼 사이즈 축소 및 중앙 정렬 */
+        /* 🌟 [요청2,3] 인풋 박스와 버튼 폭 대폭 축소 (120px) */
         .login-box {
-            max-width: 260px;
+            max-width: 120px;
             margin: 0 auto;
         }
         .login-box .stTextInput input {
@@ -153,7 +185,7 @@ def check_password():
             -webkit-text-fill-color: #FFFFFF !important;
             border: 1px solid #333333 !important;
             text-align: center;
-            font-size: 14px !important;
+            font-size: 13px !important;
             letter-spacing: 2px;
             padding: 8px;
         }
@@ -161,15 +193,13 @@ def check_password():
             border-color: #666666 !important;
         }
         
-        /* 🌟 [요청2] 패스워드 보기/숨기기 눈동자 아이콘 하얀색 처리 (검은 배경 대비) */
         div[data-testid="stTextInput"] svg {
             fill: #FFFFFF !important;
             color: #FFFFFF !important;
         }
         
-        /* 🌟 [요청2] 시스템 로그인 버튼 축소 및 하얀색 텍스트 지정 */
         .login-btn {
-            max-width: 140px;
+            max-width: 120px;
             margin: 0 auto;
         }
         .login-btn .stButton > button {
@@ -177,9 +207,10 @@ def check_password():
             border: 1px solid #444444 !important;
             height: 38px !important;
         }
+        /* 🌟 [요청4] SYSTEM LOGIN 텍스트 화이트 지정 */
         .login-btn .stButton > button * {
             color: #FFFFFF !important;
-            font-size: 12px !important;
+            font-size: 11px !important;
             font-weight: 500 !important;
             letter-spacing: 1px;
         }
@@ -191,17 +222,18 @@ def check_password():
 
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
-        st.markdown("<div style='margin-top: 22vh; text-align: center;'>", unsafe_allow_html=True)
-        # 애니메이션이 적용된 로고 호출
+        st.markdown("<div style='margin-top: 25vh; text-align: center;'>", unsafe_allow_html=True)
+        
+        # 🌟 [요청1] 부제목(프리미엄 450도...) 삭제, 로고만 압도적으로 배치
         st.markdown('<img src="https://dalbitgo.com/images/main_logo.png" class="animated-logo">', unsafe_allow_html=True)
-        st.markdown('<div style="color: #555555 !important; font-size: 13px; margin-bottom: 50px; letter-spacing: 1px;">프리미엄 450°C 화덕 생선구이 전문점</div>', unsafe_allow_html=True)
+        st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
         
         with st.form("login_form", clear_on_submit=True):
             st.markdown('<div class="login-box">', unsafe_allow_html=True)
-            pwd = st.text_input("auth", type="password", placeholder="인증코드를 입력하세요", label_visibility="collapsed")
+            pwd = st.text_input("auth", type="password", placeholder="인증코드", label_visibility="collapsed")
             st.markdown('</div>', unsafe_allow_html=True)
             
-            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
             
             st.markdown('<div class="login-btn">', unsafe_allow_html=True)
             submit = st.form_submit_button("SYSTEM LOGIN", use_container_width=True)
@@ -221,7 +253,7 @@ if not check_password():
     st.stop()
 
 # ==========================================
-# 3. 데이터 정제 및 상태 관리
+# 5. 데이터 정제 및 상태 관리
 # ==========================================
 STATE_RESOLVED = "state_resolved.csv"
 STATE_OVERRIDDEN = "state_overridden.csv"
@@ -265,10 +297,10 @@ df = load_data()
 full_store_list = load_store_list() or (sorted(df['매장명'].unique().tolist()) if not df.empty else [])
 
 # ==========================================
-# 4. 사이드바 메뉴 (푸터 최하단 고정)
+# 6. 사이드바 메뉴 
 # ==========================================
 st.sidebar.markdown("""
-<div style="padding: 10px; text-align: center; margin-top: 20px; margin-bottom: 40px;">
+<div style="padding: 10px; text-align: center; margin-top: 20px; margin-bottom: 30px;">
     <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 90%;">
 </div>
 """, unsafe_allow_html=True)
@@ -276,9 +308,15 @@ st.sidebar.markdown("""
 st.sidebar.markdown("<p style='font-size: 15px; font-weight: 700; text-align: center;'>가맹점 리뷰 통합 관리</p>", unsafe_allow_html=True)
 st.sidebar.divider()
 
-# 🌟 [요청3] 회사 정보를 사이드바 가장 아래쪽으로 배치
+# 🌟 [요청6] 다크/라이트 모드 스위치 버튼 추가
+theme_btn_text = "🌙 다크 모드로 전환" if st.session_state.theme == "light" else "☀️ 라이트 모드로 전환"
+if st.sidebar.button(theme_btn_text, use_container_width=True):
+    st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
+    st.rerun()
+
+# 🌟 [요청3] 회사 정보 하단 고정
 st.sidebar.markdown("""
-<div style='margin-top: 50vh; text-align: center; font-size: 11px; line-height: 1.6; color: #666666 !important;'>
+<div style='position: absolute; bottom: 30px; width: 100%; text-align: center; font-size: 11px; line-height: 1.6; color: #666666 !important;'>
     <b>(주)새모양에프앤비</b><br>
     사업자등록번호: 418-81-51015<br>
     전북특별자치도 전주시 덕진구 사거리길49<br>
@@ -287,7 +325,7 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 5. 가맹점 리뷰 관리 메인 화면
+# 7. 가맹점 리뷰 관리 메인 화면
 # ==========================================
 st.markdown("<h1 style='margin-bottom: 30px;'>가맹점 리뷰 통합 관리 <span style='font-size: 18px; color: #888 !important; font-weight: 500;'>| Review Management</span></h1>", unsafe_allow_html=True)
 tab1, tab2 = st.tabs(["전체 브랜드 현황", "개별 매장 상세분석"])
@@ -376,20 +414,25 @@ with tab2:
                 
                 trend_df = s_df.groupby('작성일').size().reset_index(name='건수').sort_values(by='작성일')
                 
+                # 🌟 다크모드 대응 차트 컬러 셋팅
+                chart_font_color = "#E0E0E0" if st.session_state.theme == "dark" else "#111111"
+                chart_grid_color = "#333333" if st.session_state.theme == "dark" else "#EAEAEA"
+                chart_bar_color = "#FFFFFF" if st.session_state.theme == "dark" else "#111111"
+
                 fig_bar = px.bar(trend_df, x='작성일', y='건수', text='건수')
                 fig_bar.update_traces(
-                    marker_color='#111111',
+                    marker_color=chart_bar_color,
                     textposition='outside', 
-                    textfont=dict(color='#111111', size=13, family="Noto Sans KR"),
+                    textfont=dict(color=chart_font_color, size=13, family="Noto Sans KR"),
                     hoverlabel=dict(bgcolor="#D32F2F", font_size=13, font_family="Noto Sans KR")
                 )
                 fig_bar.update_layout(
                     margin=dict(t=20, b=20, l=0, r=0), 
                     paper_bgcolor="rgba(0,0,0,0)", 
                     plot_bgcolor="rgba(0,0,0,0)", 
-                    font=dict(color="#111111", family="Noto Sans KR"),
-                    xaxis=dict(title="리뷰 작성 일자", type='category', showgrid=False, tickfont=dict(color="#666666")),
-                    yaxis=dict(title="작성 건수(건)", showgrid=True, gridcolor="#EAEAEA", tickfont=dict(color="#666666"), dtick=1),
+                    font=dict(color=chart_font_color, family="Noto Sans KR"),
+                    xaxis=dict(title="리뷰 작성 일자", type='category', showgrid=False, tickfont=dict(color="#888888")),
+                    yaxis=dict(title="작성 건수(건)", showgrid=True, gridcolor=chart_grid_color, tickfont=dict(color="#888888"), dtick=1),
                     hovermode="x unified"
                 )
                 st.plotly_chart(fig_bar, use_container_width=True)
@@ -402,12 +445,3 @@ with tab2:
                 st.info("선택하신 매장의 수집된 데이터가 없습니다.")
         else:
             st.info("전체 리뷰 데이터가 아직 수집되지 않았습니다.")
-
-# 최신 데이터 동기화 버튼을 화면 우측 최하단에 작게 은닉
-st.markdown("<div style='margin-top: 100px;'></div>", unsafe_allow_html=True)
-col_empty, col_sync = st.columns([10, 1])
-with col_sync:
-    st.markdown('<div class="hidden-sync-btn">', unsafe_allow_html=True)
-    if st.button("최신 데이터 동기화", help="최근 수집 데이터를 불러옵니다.", use_container_width=True):
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
