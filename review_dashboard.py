@@ -55,33 +55,54 @@ st.markdown("""
     /* "Press Enter to apply" 숨김 처리 */
     div[data-testid="InputInstructions"] { display: none !important; }
     
-    /* 메인 화면 버튼 공통 */
-    .main-btn .stButton > button {
-        border-radius: 4px !important; border: none !important; height: 42px;
-    }
-    .main-btn .stButton > button * { font-weight: 700 !important; }
-    
     /* 폼 컨테이너 클리어 및 컬럼 간격 최소화 */
     [data-testid="stForm"] { border: none !important; padding: 0 !important; background-color: transparent !important; }
     div[data-testid="column"] { padding: 0 4px !important; }
 
-    /* 🌟 우측 상단 원형 테마 버튼 공통 CSS */
-    .top-theme-btn .stButton > button {
+    /* 🌟 [핵심 수술] 조치 완료 액션 버튼 공통 속성 (Primary Button) */
+    [data-testid="baseButton-primary"] {
+        border-radius: 4px !important;
+        height: 42px !important;
+        transition: all 0.2s ease;
+    }
+    [data-testid="baseButton-primary"] p, [data-testid="baseButton-primary"] span {
+        font-weight: 700 !important;
+        color: #FFFFFF !important; /* 텍스트는 어떤 모드든 무조건 하얀색 강제 고정 */
+    }
+
+    /* 🌟 사이드바 테마 변경 버튼 (동그라미) */
+    .theme-marker + div button {
         border-radius: 50% !important;
         width: 40px !important;
         height: 40px !important;
         padding: 0 !important;
-        float: right;
-        margin-top: 15px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        margin: 0 auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
         transition: all 0.3s ease;
     }
-    .top-theme-btn .stButton > button * {
-        color: #888888 !important;
+    .theme-marker + div button p, .theme-marker + div button span {
         font-size: 16px !important;
-        line-height: 1;
+        line-height: 1 !important;
+    }
+
+    /* 🌟 우측 상단 테마 변경 버튼 (동그라미) */
+    .top-theme-marker + div button {
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        float: right !important;
+        margin-top: 10px !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        transition: all 0.3s ease;
+    }
+    .top-theme-marker + div button p, .top-theme-marker + div button span {
+        font-size: 16px !important;
+        line-height: 1 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -117,13 +138,20 @@ if st.session_state.theme == "dark":
         
         [data-testid="stDataFrame"] { border-radius: 4px; overflow: hidden; border: 1px solid #333333 !important; background-color: #222222 !important; }
         
-        .main-btn .stButton > button { background-color: #333333 !important; }
-        .main-btn .stButton > button *, .main-btn .stButton > button p { color: #FFFFFF !important; }
-        .main-btn .stButton > button:hover { background-color: #555555 !important; }
+        /* 🌟 조치 완료 버튼 다크모드 배경 */
+        [data-testid="baseButton-primary"] {
+            background-color: #333333 !important;
+            border: 1px solid #555555 !important;
+        }
+        [data-testid="baseButton-primary"]:hover {
+            background-color: #555555 !important;
+            border-color: #888888 !important;
+        }
 
-        /* 다크모드 상단 테마 버튼 */
-        .top-theme-btn .stButton > button { background-color: #222222 !important; border: 1px solid #444444 !important; }
-        .top-theme-btn .stButton > button:hover { background-color: #444444 !important; }
+        /* 다크모드 테마 전환 버튼 */
+        .theme-marker + div button, .top-theme-marker + div button { background-color: #222222 !important; border: 1px solid #444444 !important; }
+        .theme-marker + div button:hover, .top-theme-marker + div button:hover { background-color: #444444 !important; }
+        .theme-marker + div button p, .top-theme-marker + div button p { color: #888888 !important; }
     </style>
     """, unsafe_allow_html=True)
 else:
@@ -154,13 +182,19 @@ else:
         
         [data-testid="stDataFrame"] { border-radius: 4px; overflow: hidden; border: 1px solid #E0E0E0 !important; background-color: #FFFFFF !important; }
         
-        .main-btn .stButton > button { background-color: #111111 !important; }
-        .main-btn .stButton > button *, .main-btn .stButton > button p { color: #FFFFFF !important; }
-        .main-btn .stButton > button:hover { background-color: #333333 !important; }
+        /* 🌟 조치 완료 버튼 라이트모드 배경 */
+        [data-testid="baseButton-primary"] {
+            background-color: #111111 !important;
+            border: 1px solid #000000 !important;
+        }
+        [data-testid="baseButton-primary"]:hover {
+            background-color: #333333 !important;
+        }
 
-        /* 라이트모드 상단 테마 버튼 */
-        .top-theme-btn .stButton > button { background-color: #FFFFFF !important; border: 1px solid #CCCCCC !important; }
-        .top-theme-btn .stButton > button:hover { background-color: #E0E0E0 !important; }
+        /* 라이트모드 테마 전환 버튼 */
+        .theme-marker + div button, .top-theme-marker + div button { background-color: #FFFFFF !important; border: 1px solid #CCCCCC !important; }
+        .theme-marker + div button:hover, .top-theme-marker + div button:hover { background-color: #E0E0E0 !important; }
+        .theme-marker + div button p, .top-theme-marker + div button p { color: #888888 !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -172,7 +206,7 @@ def check_password():
     if "password_correct" in st.session_state and st.session_state["password_correct"]:
         return True
 
-    # 🌟 로그인 화면 전용 독자적 CSS (버그 원천 차단)
+    # 🌟 로그인 화면 전용 독자적 CSS
     st.markdown("""
     <style>
         .stApp { background-color: #000000 !important; }
@@ -344,8 +378,18 @@ st.sidebar.markdown("""
 st.sidebar.markdown("<p style='font-size: 15px; font-weight: 700; text-align: center;'>가맹점 리뷰 통합 관리</p>", unsafe_allow_html=True)
 st.sidebar.divider()
 
-# 🌟 겹침(오버랩) 버그 원천 차단: absolute 걷어내고 여백(스페이서)으로 무조건 가장 하단으로 밀어냄
-st.sidebar.markdown("<div style='height: 60vh;'></div>", unsafe_allow_html=True)
+# 🌟 사이드바 테마 버튼 (만약 사용할 경우를 대비한 뼈대 마커)
+st.sidebar.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+c1, c2, c3 = st.sidebar.columns([1, 1, 1])
+with c2:
+    st.markdown('<div class="theme-marker"></div>', unsafe_allow_html=True)
+    theme_icon = "○" if st.session_state.theme == "light" else "●"
+    if st.button(theme_icon, key="sidebar_theme_btn", help="다크/라이트 모드 변경"):
+        st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+        st.rerun()
+
+# 🌟 겹침(오버랩) 버그 원천 차단
+st.sidebar.markdown("<div style='height: 45vh;'></div>", unsafe_allow_html=True)
 st.sidebar.markdown("""
 <div style='text-align: center; font-size: 11px; line-height: 1.6; color: #666666 !important; border-top: 1px solid #333333; padding-top: 15px;'>
     <b>(주)새모양에프앤비</b><br>
@@ -366,12 +410,12 @@ col_title, col_theme = st.columns([10, 1])
 with col_title:
     st.markdown("<h1 style='margin-bottom: 30px;'>가맹점 리뷰 통합 관리 <span style='font-size: 18px; color: #888 !important; font-weight: 500;'>| Review Management</span></h1>", unsafe_allow_html=True)
 with col_theme:
-    st.markdown('<div class="top-theme-btn">', unsafe_allow_html=True)
+    # 🌟 우측 상단 테마 버튼 전용 마커
+    st.markdown('<div class="top-theme-marker"></div>', unsafe_allow_html=True)
     theme_icon = "○" if st.session_state.theme == "light" else "●"
-    if st.button(theme_icon, key="theme_btn", help="다크/라이트 모드 변경"):
+    if st.button(theme_icon, key="top_theme_btn", help="다크/라이트 모드 변경"):
         st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
 
 tab1, tab2 = st.tabs(["전체 브랜드 현황", "개별 매장 상세분석"])
 
@@ -394,15 +438,14 @@ with tab1:
                     st.write(f"**상세 내용:** {row['리뷰내용']}")
                     st.write("") 
                     
-                    st.markdown('<div class="main-btn">', unsafe_allow_html=True)
                     c1, c2, _ = st.columns([1.5, 1.5, 3])
-                    if c1.button("해피콜 조치 완료", key=f"re_{row['id']}", use_container_width=True): 
+                    # 💡 [핵심 수술] type="primary"를 명시하여 제가 짠 디자인 락(Lock)이 정확히 체결되도록 조치
+                    if c1.button("해피콜 조치 완료", key=f"re_{row['id']}", use_container_width=True, type="primary"): 
                         add_saved_id(STATE_RESOLVED, row['id'])
                         st.rerun()
-                    if c2.button("긍정 분류로 예외 처리", key=f"ov_{row['id']}", use_container_width=True): 
+                    if c2.button("긍정 분류로 예외 처리", key=f"ov_{row['id']}", use_container_width=True, type="primary"): 
                         add_saved_id(STATE_OVERRIDDEN, row['id'])
                         st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
         else: 
             st.success(f"발견되었던 부정 리뷰 {len(total_neg_df)}건에 대한 본사 해피콜 및 전산 조치가 100% 완료되었습니다.")
         
@@ -457,17 +500,15 @@ with tab2:
                 
                 st.markdown("<div style='margin-top: 35px; margin-bottom: 10px;'><b>일자별 리뷰 감정 추이 (개선/악화 지표)</b></div>", unsafe_allow_html=True)
                 
-                # 💡 [핵심 수술] 감정분석 별로 그룹화하여 긍정/부정/중립 추이를 스택 차트로 분리
                 trend_df = s_df.groupby(['작성일', '감정분석']).size().reset_index(name='건수').sort_values(by='작성일')
                 
                 chart_font_color = "#E0E0E0" if st.session_state.theme == "dark" else "#111111"
                 chart_grid_color = "#333333" if st.session_state.theme == "dark" else "#EAEAEA"
                 
-                # 직관적인 감정별 색상 매핑
                 color_map = {
-                    '긍정': '#4CAF50',  # 편안한 초록
-                    '부정': '#E53935',  # 강렬한 빨강 (CS 리스크)
-                    '중립': '#9E9E9E'   # 회색
+                    '긍정': '#4CAF50',  
+                    '부정': '#E53935',  
+                    '중립': '#9E9E9E'   
                 }
 
                 fig_bar = px.bar(trend_df, x='작성일', y='건수', color='감정분석', 
