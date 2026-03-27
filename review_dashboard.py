@@ -176,7 +176,7 @@ def check_password():
         
         /* 🌟 [요청2,3] 인풋 박스와 버튼 폭 대폭 축소 (120px) */
         .login-box {
-            max-width: 120px;
+            max-width: 10px;
             margin: 0 auto;
         }
         .login-box .stTextInput input {
