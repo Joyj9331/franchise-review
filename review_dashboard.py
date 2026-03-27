@@ -7,7 +7,7 @@ import re
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. 페이지 기본 설정 및 다크 사이드바 CSS 주입
+# 1. 페이지 기본 설정 및 메인 CSS 주입
 # ==========================================
 st.set_page_config(page_title="달빛에구운고등어 본사 인트라넷", layout="wide")
 
@@ -28,7 +28,7 @@ st.markdown("""
     .stApp { background-color: #F8F9FA; }
     h1, h2, h3, h4, h5, h6, p, label, span { color: #111111 !important; }
     
-    /* 🌟 [요청1,2,3] 사이드바 전용 블랙 모드 스타일링 */
+    /* 🌟 사이드바 블랙 모드 스타일링 */
     [data-testid="stSidebar"] {
         background-color: #111111 !important;
         border-right: none !important;
@@ -54,7 +54,7 @@ st.markdown("""
         background-color: #E0E0E0 !important;
     }
 
-    /* 🌟 [요청5] 드롭다운 리스트 블랙 바탕 & 하얀 글씨 */
+    /* 🌟 드롭다운 리스트 블랙 바탕 & 하얀 글씨 */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
         background-color: #111111 !important;
         border: 1px solid #333333 !important;
@@ -64,7 +64,10 @@ st.markdown("""
     li[role="option"]:hover { background-color: #333333 !important; color: #FFFFFF !important; }
     li[role="option"][aria-selected="true"] { background-color: #D32F2F !important; color: #FFFFFF !important; }
 
-    /* 메인 화면 메트릭/입력창 플랫 디자인 (기존 유지) */
+    /* 🌟 "Press Enter to apply" 숨김 처리 (전역 적용) */
+    div[data-testid="InputInstructions"] { display: none !important; }
+
+    /* 메인 화면 메트릭/입력창 플랫 디자인 */
     div[data-testid="metric-container"] {
         background-color: #FFFFFF; border: 1px solid #E0E0E0;
         padding: 20px 25px; border-radius: 4px; border-left: 4px solid #D32F2F; 
@@ -83,7 +86,7 @@ st.markdown("""
     div[data-testid="stExpander"] summary { background-color: transparent !important; }
     div[data-testid="stExpander"] summary p { font-weight: 600 !important; }
 
-    /* 메인 화면 버튼 */
+    /* 메인 화면 전문성 있는 버튼 */
     .main-btn .stButton > button {
         background-color: #111111 !important; border-radius: 4px !important; border: none !important; height: 42px;
     }
@@ -93,32 +96,86 @@ st.markdown("""
     /* 폼 컨테이너 선명하게 */
     [data-testid="stForm"] { border: none !important; padding: 0 !important; background-color: transparent !important; }
     [data-testid="stDataFrame"] { border-radius: 4px; overflow: hidden; border: 1px solid #E0E0E0; background-color: #FFFFFF; }
+
+    /* 🌟 은닉된 동기화 버튼 디자인 */
+    .hidden-sync-btn .stButton > button {
+        background-color: transparent !important;
+        color: #CCCCCC !important;
+        border: none !important;
+        font-size: 12px !important;
+        height: auto;
+        padding: 5px 10px;
+    }
+    .hidden-sync-btn .stButton > button * {
+        color: #CCCCCC !important;
+        font-weight: 400 !important;
+    }
+    .hidden-sync-btn .stButton > button:hover * {
+        color: #888888 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. 보안 로그인 시스템 [요청6,7 반영]
+# 2. 보안 로그인 시스템 (풀스크린 블랙 / 이모지 삭제 / 압도적 로고)
 # ==========================================
 def check_password():
     if "password_correct" in st.session_state and st.session_state["password_correct"]:
         return True
 
-    col1, col2, col3 = st.columns([1.5, 1, 1.5])
-    with col2:
-        st.markdown("""
-        <div style="text-align: center; margin-top: 15vh; margin-bottom: 2vh;">
-            <div style="background-color: #111111; padding: 25px; border-radius: 4px; border-top: 4px solid #D32F2F; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                <img src="https://dalbitgo.com/images/main_logo.png" style="height: 55px; object-fit: contain;">
-            </div>
-            <div style="color: #666666 !important; font-size: 13px; margin-bottom: 30px;">프리미엄 450°C 화덕 생선구이 전문점</div>
-        </div>
-        """, unsafe_allow_html=True)
+    # 로그인 화면 전용 전체화면 블랙 CSS 주입
+    st.markdown("""
+    <style>
+        .stApp { background-color: #000000 !important; }
+        [data-testid="stHeader"] { display: none !important; }
+        [data-testid="stSidebar"] { display: none !important; }
         
-        # 💡 [요청6] 종이비행기 버튼과 간결한 placeholder 적용
+        /* 로그인 인풋 박스 전문성 강화 */
+        .login-box .stTextInput input {
+            background-color: #111111 !important;
+            color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important;
+            border: 1px solid #333333 !important;
+            text-align: center;
+            font-size: 16px;
+            letter-spacing: 2px;
+            padding: 12px;
+        }
+        .login-box .stTextInput input:focus {
+            border-color: #666666 !important;
+        }
+        /* 로그인 전용 버튼 */
+        .login-btn .stButton > button {
+            background-color: #222222 !important;
+            border: 1px solid #444444 !important;
+            color: #FFFFFF !important;
+            height: 50px;
+            letter-spacing: 1px;
+        }
+        .login-btn .stButton > button:hover {
+            background-color: #444444 !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    with col2:
+        st.markdown("<div style='margin-top: 22vh; text-align: center;'>", unsafe_allow_html=True)
+        # 로고 사이즈 대폭 확장 (압도적인 무게감)
+        st.markdown('<img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 320px; margin-bottom: 20px;">', unsafe_allow_html=True)
+        st.markdown('<div style="color: #555555 !important; font-size: 14px; margin-bottom: 50px; letter-spacing: 1px;">프리미엄 450°C 화덕 생선구이 전문점</div>', unsafe_allow_html=True)
+        
+        # 간결하고 무거운 톤의 로그인 폼
         with st.form("login_form", clear_on_submit=True):
-            c1, c2 = st.columns([5, 1])
-            pwd = c1.text_input("auth", type="password", placeholder="인증코드를 입력하세요", label_visibility="collapsed")
-            submit = c2.form_submit_button("✈️")
+            st.markdown('<div class="login-box">', unsafe_allow_html=True)
+            pwd = st.text_input("auth", type="password", placeholder="인증코드를 입력하세요", label_visibility="collapsed")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            
+            st.markdown('<div class="login-btn">', unsafe_allow_html=True)
+            submit = st.form_submit_button("SYSTEM LOGIN", use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
             
             if submit:
                 if pwd == "51015":
@@ -126,6 +183,8 @@ def check_password():
                     st.rerun()
                 elif pwd:
                     st.error("인증 코드가 일치하지 않습니다.")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
     return False
 
 if not check_password():
@@ -176,24 +235,19 @@ df = load_data()
 full_store_list = load_store_list() or (sorted(df['매장명'].unique().tolist()) if not df.empty else [])
 
 # ==========================================
-# 4. 사이드바 메뉴 (다크 모드 완벽 적용)
+# 4. 사이드바 메뉴 (불필요 텍스트, 버튼 삭제)
 # ==========================================
 st.sidebar.markdown("""
-<div style="padding: 10px; text-align: center; margin-top: 10px; margin-bottom: 25px;">
+<div style="padding: 10px; text-align: center; margin-top: 20px; margin-bottom: 40px;">
     <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 90%;">
 </div>
 """, unsafe_allow_html=True)
 
-st.sidebar.markdown("<p style='text-align: center; font-size: 13px; font-weight: 700; letter-spacing: 1px;'>본사 통합 업무 포털</p>", unsafe_allow_html=True)
-st.sidebar.divider()
 st.sidebar.markdown("<p style='font-size: 15px; font-weight: 700; text-align: center;'>가맹점 리뷰 통합 관리</p>", unsafe_allow_html=True)
 st.sidebar.divider()
 
-if st.sidebar.button("🔄 최신 데이터 동기화", use_container_width=True): 
-    st.rerun()
-
 st.sidebar.markdown("""
-<div style='font-size: 11px; text-align: center; line-height: 1.6; margin-top: 60px;'>
+<div style='font-size: 11px; text-align: center; line-height: 1.6; margin-top: 80px; color: #666666 !important;'>
     <b>(주)새모양에프앤비</b><br>
     사업자등록번호: 418-81-51015<br>
     전북특별자치도 전주시 덕진구 사거리길49<br>
@@ -208,7 +262,7 @@ st.markdown("<h1 style='margin-bottom: 30px;'>가맹점 리뷰 통합 관리 <sp
 tab1, tab2 = st.tabs(["전체 브랜드 현황", "개별 매장 상세분석"])
 
 with tab1:
-    st.markdown("<h3 style='margin-top: 25px; margin-bottom: 15px;'>🚨 즉각 조치 요망 매장 리스트 (영구 보존)</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='margin-top: 25px; margin-bottom: 15px;'>즉각 조치 요망 매장 리스트 (영구 보존)</h3>", unsafe_allow_html=True)
     
     if df.empty:
         st.info("아직 수집된 리뷰 데이터가 없습니다. 크롤링 봇을 실행해 주십시오.")
@@ -218,57 +272,50 @@ with tab1:
         active_neg = total_neg_df[~total_neg_df['id'].isin(resolved_ids)].sort_values(by='작성일', ascending=False)
         
         if total_neg_df.empty:
-            st.success("🎉 누적된 수집 리뷰 중 '부정(불만)' 키워드가 감지된 내역이 단 한 건도 없습니다!")
+            st.success("누적된 수집 리뷰 중 '부정(불만)' 키워드가 감지된 내역이 단 한 건도 없습니다.")
         elif not active_neg.empty:
-            st.error(f"⚠️ 총 {len(active_neg)}건의 미조치 부정 리뷰가 남아있습니다. 반드시 점주 확인 후 [조치 완료]를 눌러 전산에서 소거해 주십시오.")
+            st.error(f"총 {len(active_neg)}건의 미조치 부정 리뷰가 남아있습니다. 반드시 점주 확인 후 [조치 완료]를 눌러 전산에서 소거해 주십시오.")
             for _, row in active_neg.iterrows():
                 with st.expander(f"[{row['매장명']}] {row['작성일']} | {str(row['리뷰내용'])[:35]}..."):
                     st.write(f"**상세 내용:** {row['리뷰내용']}")
                     st.write("") 
                     
-                    # 버튼 컨테이너에만 클래스 부여하여 블랙테마 강제 적용
                     st.markdown('<div class="main-btn">', unsafe_allow_html=True)
                     c1, c2, _ = st.columns([1.5, 1.5, 3])
-                    if c1.button("✅ 해피콜 조치 완료", key=f"re_{row['id']}", use_container_width=True): 
+                    if c1.button("해피콜 조치 완료", key=f"re_{row['id']}", use_container_width=True): 
                         add_saved_id(STATE_RESOLVED, row['id'])
                         st.rerun()
-                    if c2.button("🌟 긍정 분류로 예외 처리", key=f"ov_{row['id']}", use_container_width=True): 
+                    if c2.button("긍정 분류로 예외 처리", key=f"ov_{row['id']}", use_container_width=True): 
                         add_saved_id(STATE_OVERRIDDEN, row['id'])
                         st.rerun()
                     st.markdown('</div>', unsafe_allow_html=True)
         else: 
-            st.success(f"✅ 발견되었던 부정 리뷰 {len(total_neg_df)}건에 대한 본사 해피콜 및 전산 조치가 100% 완료되었습니다.")
+            st.success(f"발견되었던 부정 리뷰 {len(total_neg_df)}건에 대한 본사 해피콜 및 전산 조치가 100% 완료되었습니다.")
         
         st.divider()
         
-        # 💡 [요청4] 매장별 누적 랭킹을 '어제' 기준으로 전면 변경
         yesterday_str = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
         st.markdown(f"<h3 style='margin-bottom: 15px;'>매장별 활성도 랭킹 (어제 기준: {yesterday_str})</h3>", unsafe_allow_html=True)
         
-        # 엑셀의 전체 75개 매장 목록을 베이스로 0건을 기본 세팅
         all_counts = pd.DataFrame({'매장명': full_store_list, '리뷰수': 0})
-        
-        # '어제' 날짜에 작성된 리뷰만 필터링
         yesterday_df = df[df['작성일'] == yesterday_str]
         
         if not yesterday_df.empty:
             y_counts = yesterday_df['매장명'].value_counts().reset_index(name='리뷰수')
-            # 기존 0건 데이터프레임과 병합하여 어제 리뷰가 있는 곳만 숫자 업데이트
             merged_counts = pd.merge(all_counts, y_counts, on='매장명', how='left').fillna(0)
             merged_counts['리뷰수'] = merged_counts['리뷰수_x'] + merged_counts['리뷰수_y']
             merged_counts.drop(columns=['리뷰수_x', '리뷰수_y'], inplace=True)
             all_counts = merged_counts
             
         all_counts['리뷰수'] = all_counts['리뷰수'].astype(int)
-        # 리뷰수가 많은 순 -> 이름 순으로 정렬
         all_counts = all_counts.sort_values(by=['리뷰수', '매장명'], ascending=[False, True]).reset_index(drop=True)
         
         col_l, col_r = st.columns(2)
         with col_l: 
-            st.info("🔥 리뷰 활성화 우수 매장 (TOP 5)")
+            st.info("리뷰 활성화 우수 매장 (TOP 5)")
             st.dataframe(all_counts.head(5), use_container_width=True)
         with col_r: 
-            st.warning("⚠️ 리뷰 관리 필요 매장 (BOTTOM 5)")
+            st.warning("리뷰 관리 필요 매장 (BOTTOM 5)")
             st.dataframe(all_counts.tail(5), use_container_width=True)
 
 with tab2:
@@ -324,3 +371,12 @@ with tab2:
                 st.info("선택하신 매장의 수집된 데이터가 없습니다.")
         else:
             st.info("전체 리뷰 데이터가 아직 수집되지 않았습니다.")
+
+# 💡 [요청7] 최신 데이터 동기화 버튼을 화면 우측 최하단에 작게 은닉
+st.markdown("<div style='margin-top: 100px;'></div>", unsafe_allow_html=True)
+col_empty, col_sync = st.columns([10, 1])
+with col_sync:
+    st.markdown('<div class="hidden-sync-btn">', unsafe_allow_html=True)
+    if st.button("최신 데이터 동기화", help="최근 수집 데이터를 불러옵니다.", use_container_width=True):
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
