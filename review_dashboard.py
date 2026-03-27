@@ -455,20 +455,29 @@ with tab2:
                 m3.metric("긍정 평가", f"{len(s_df[s_df['감정분석'] == '긍정'])}건")
                 m4.metric("부정 평가", f"{len(s_df[s_df['감정분석'] == '부정'])}건")
                 
-                st.markdown("<div style='margin-top: 35px; margin-bottom: 10px;'><b>일자별 리뷰 작성 추이</b></div>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-top: 35px; margin-bottom: 10px;'><b>일자별 리뷰 감정 추이 (개선/악화 지표)</b></div>", unsafe_allow_html=True)
                 
-                trend_df = s_df.groupby('작성일').size().reset_index(name='건수').sort_values(by='작성일')
+                # 💡 [핵심 수술] 감정분석 별로 그룹화하여 긍정/부정/중립 추이를 스택 차트로 분리
+                trend_df = s_df.groupby(['작성일', '감정분석']).size().reset_index(name='건수').sort_values(by='작성일')
                 
                 chart_font_color = "#E0E0E0" if st.session_state.theme == "dark" else "#111111"
                 chart_grid_color = "#333333" if st.session_state.theme == "dark" else "#EAEAEA"
-                chart_bar_color = "#FFFFFF" if st.session_state.theme == "dark" else "#111111"
+                
+                # 직관적인 감정별 색상 매핑
+                color_map = {
+                    '긍정': '#4CAF50',  # 편안한 초록
+                    '부정': '#E53935',  # 강렬한 빨강 (CS 리스크)
+                    '중립': '#9E9E9E'   # 회색
+                }
 
-                fig_bar = px.bar(trend_df, x='작성일', y='건수', text='건수')
+                fig_bar = px.bar(trend_df, x='작성일', y='건수', color='감정분석', 
+                                 text='건수', color_discrete_map=color_map,
+                                 barmode='stack')
+                                 
                 fig_bar.update_traces(
-                    marker_color=chart_bar_color,
-                    textposition='outside', 
-                    textfont=dict(color=chart_font_color, size=13, family="Noto Sans KR"),
-                    hoverlabel=dict(bgcolor="#D32F2F", font_size=13, font_family="Noto Sans KR")
+                    textposition='inside', 
+                    textfont=dict(color='#FFFFFF', size=12, family="Noto Sans KR"),
+                    hoverlabel=dict(font_size=13, font_family="Noto Sans KR")
                 )
                 fig_bar.update_layout(
                     margin=dict(t=20, b=20, l=0, r=0), 
@@ -477,6 +486,7 @@ with tab2:
                     font=dict(color=chart_font_color, family="Noto Sans KR"),
                     xaxis=dict(title="리뷰 작성 일자", type='category', showgrid=False, tickfont=dict(color="#888888")),
                     yaxis=dict(title="작성 건수(건)", showgrid=True, gridcolor=chart_grid_color, tickfont=dict(color="#888888"), dtick=1),
+                    legend=dict(title="감정 분류", orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                     hovermode="x unified"
                 )
                 st.plotly_chart(fig_bar, use_container_width=True)
