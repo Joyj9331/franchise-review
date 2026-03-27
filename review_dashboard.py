@@ -75,8 +75,9 @@ st.markdown("""
     }
     .main-btn .stButton > button * { font-weight: 700 !important; }
     
-    /* 폼 컨테이너 클리어 */
+    /* 폼 컨테이너 클리어 및 컬럼 간격 최소화 */
     [data-testid="stForm"] { border: none !important; padding: 0 !important; background-color: transparent !important; }
+    div[data-testid="column"] { padding: 0 4px !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -152,13 +153,13 @@ else:
 
 
 # ==========================================
-# 4. 보안 로그인 시스템 (풀스크린 블랙 / 초소형 컴팩트 인풋)
+# 4. 보안 로그인 시스템 (풀스크린 블랙 / 가로 일렬 배치 폼)
 # ==========================================
 def check_password():
     if "password_correct" in st.session_state and st.session_state["password_correct"]:
         return True
 
-    # 로그인 화면 전용 독자적 CSS (메인 화면 간섭 원천 차단)
+    # 로그인 화면 전용 독자적 CSS
     st.markdown("""
     <style>
         .stApp { background-color: #000000 !important; }
@@ -176,10 +177,16 @@ def check_password():
             display: block;
         }
         
-        /* 🌟 [핵심] 로그인 화면 전용 입력창 다크화 및 컴팩트 스타일링 */
+        /* 🌟 [핵심 수정] 로그인 폼 가로 폭 축소 */
+        .login-form-container {
+            max-width: 250px; /* 입력창과 버튼이 한 줄에 들어갈 컴팩트한 폭 */
+            margin: 0 auto;
+        }
+        
+        /* 입력창 디자인 */
         .login-form-container div[data-baseweb="input"] > div {
             background-color: #111111 !important;
-            border: 1px solid #444444 !important;
+            border: 1px solid #333333 !important;
             border-radius: 4px !important;
         }
         .login-form-container input {
@@ -187,9 +194,9 @@ def check_password():
             color: #FFFFFF !important;
             -webkit-text-fill-color: #FFFFFF !important;
             text-align: center !important;
-            font-size: 13px !important;
+            font-size: 12px !important;
             letter-spacing: 2px;
-            padding: 10px !important;
+            padding: 8px !important;
         }
         .login-form-container div[data-baseweb="input"] > div:focus-within {
             border-color: #888888 !important;
@@ -201,29 +208,30 @@ def check_password():
             color: #FFFFFF !important;
         }
         
-        /* 🌟 [핵심] 시인성 강화된 컴팩트 시스템 로그인 버튼 */
-        .login-form-container .stButton > button {
-            background-color: #333333 !important;
-            border: 1px solid #555555 !important;
+        /* 🌟 [핵심 수정] 입력창 옆에 찰싹 붙는 미니 로그인 버튼 */
+        .login-btn-col .stButton > button {
+            background-color: #222222 !important;
+            border: 1px solid #444444 !important;
             border-radius: 4px !important;
-            height: 40px !important;
+            height: 38px !important; /* 입력창과 동일한 높이 */
             width: 100% !important;
-            transition: all 0.3s ease;
+            padding: 0 !important;
+            transition: all 0.2s ease;
         }
-        .login-form-container .stButton > button * {
+        /* 🌟 로그인 글씨 화이트 강제 지정 */
+        .login-btn-col .stButton > button * {
             color: #FFFFFF !important;
-            font-size: 11px !important;
-            font-weight: 500 !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
             letter-spacing: 1px;
         }
-        .login-form-container .stButton > button:hover {
-            background-color: #555555 !important;
-            border-color: #777777 !important;
+        .login-btn-col .stButton > button:hover {
+            background-color: #444444 !important;
+            border-color: #666666 !important;
         }
     </style>
     """, unsafe_allow_html=True)
 
-    # 화면 중앙 배치를 위한 최상위 컬럼
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
         st.markdown("<div style='margin-top: 25vh; text-align: center;'>", unsafe_allow_html=True)
@@ -231,24 +239,25 @@ def check_password():
         # 애니메이션 로고
         st.markdown('<img src="https://dalbitgo.com/images/main_logo.png" class="animated-logo">', unsafe_allow_html=True)
         
-        # 🌟 폼 내부를 다시 3등분하여 입력창과 버튼 가로 길이를 극단적으로 축소
+        # 🌟 폼 내부를 쪼개어 가로로 일렬 배치
         with st.form("login_form", clear_on_submit=True):
             st.markdown('<div class="login-form-container">', unsafe_allow_html=True)
             
-            # 입력창을 중앙에 조그맣게 배치
-            inner_c1, inner_c2, inner_c3 = st.columns([1, 1.5, 1])
-            with inner_c2:
+            col_input, col_btn = st.columns([3, 1]) # 입력창(3) : 버튼(1) 비율
+            with col_input:
                 pwd = st.text_input("auth", type="password", placeholder="인증코드", label_visibility="collapsed")
-                st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-                submit = st.form_submit_button("SYSTEM LOGIN")
+            with col_btn:
+                st.markdown('<div class="login-btn-col">', unsafe_allow_html=True)
+                submit = st.form_submit_button("LOGIN")
+                st.markdown('</div>', unsafe_allow_html=True)
                 
-                if submit:
-                    if pwd == "51015":
-                        st.session_state["password_correct"] = True
-                        st.rerun()
-                    elif pwd:
-                        st.error("인증 코드가 일치하지 않습니다.")
-                        
+            if submit:
+                if pwd == "51015":
+                    st.session_state["password_correct"] = True
+                    st.rerun()
+                elif pwd:
+                    st.error("인증 코드가 일치하지 않습니다.")
+                    
             st.markdown('</div>', unsafe_allow_html=True)
             
         st.markdown("</div>", unsafe_allow_html=True)
@@ -306,6 +315,28 @@ full_store_list = load_store_list() or (sorted(df['매장명'].unique().tolist()
 # 6. 사이드바 메뉴 
 # ==========================================
 st.sidebar.markdown("""
+<style>
+    /* 🌟 [핵심 수정] 완벽한 원형 테마 버튼 CSS */
+    .circle-theme-btn .stButton > button {
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+        background-color: #222222 !important;
+        border: 1px solid #444444 !important;
+        padding: 0 !important;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .circle-theme-btn .stButton > button * {
+        color: #888888 !important;
+        font-size: 16px !important;
+    }
+    .circle-theme-btn .stButton > button:hover {
+        background-color: #444444 !important;
+    }
+</style>
 <div style="padding: 10px; text-align: center; margin-top: 20px; margin-bottom: 30px;">
     <img src="https://dalbitgo.com/images/main_logo.png" style="max-width: 90%;">
 </div>
@@ -314,14 +345,21 @@ st.sidebar.markdown("""
 st.sidebar.markdown("<p style='font-size: 15px; font-weight: 700; text-align: center;'>가맹점 리뷰 통합 관리</p>", unsafe_allow_html=True)
 st.sidebar.divider()
 
-theme_btn_text = "🌙 다크 모드로 전환" if st.session_state.theme == "light" else "☀️ 라이트 모드로 전환"
-if st.sidebar.button(theme_btn_text, use_container_width=True):
-    st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
-    st.rerun()
+# 🌟 이모지, 글씨 싹 빼고 완벽한 동그라미(원형) 버튼 중앙 배치
+st.sidebar.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+c1, c2, c3 = st.sidebar.columns([1, 1, 1])
+with c2:
+    st.markdown('<div class="circle-theme-btn">', unsafe_allow_html=True)
+    theme_icon = "○" if st.session_state.theme == "light" else "●"
+    if st.button(theme_icon, help="다크/라이트 모드 변경"):
+        st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# 회사 정보 하단 고정
+# 🌟 겹침(오버랩) 버그 원천 차단: absolute 걷어내고 여백(스페이서)으로 무조건 가장 하단으로 밀어냄
+st.sidebar.markdown("<div style='height: 45vh;'></div>", unsafe_allow_html=True)
 st.sidebar.markdown("""
-<div style='position: absolute; bottom: 30px; width: 100%; text-align: center; font-size: 11px; line-height: 1.6; color: #666666 !important;'>
+<div style='text-align: center; font-size: 11px; line-height: 1.6; color: #666666 !important; border-top: 1px solid #333333; padding-top: 15px;'>
     <b>(주)새모양에프앤비</b><br>
     사업자등록번호: 418-81-51015<br>
     전북특별자치도 전주시 덕진구 사거리길49<br>
