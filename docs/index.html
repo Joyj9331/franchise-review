@@ -24,17 +24,21 @@
     <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
         <div>
             <h1 class="text-3xl font-bold gradient-text">🌕 달빛에구운고등어</h1>
-            <p class="text-slate-400 mt-1">HQ 마케팅 통합 대시보드 (본사 전용)</p>
+            <p class="text-slate-400 mt-1">HQ 마케팅 통합 대시보드 (v2.0)</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-4">
+            <nav class="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+                <button onclick="switchTab('review')" id="btnReview" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white transition-all">리뷰 분석</button>
+                <button onclick="switchTab('seo')" id="btnSeo" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">SEO 전략</button>
+            </nav>
             <div id="lastUpdate" class="text-xs text-slate-500 bg-slate-800/50 px-3 py-2 rounded-full border border-slate-700">
                 데이터 로딩 중...
             </div>
-            <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">새로고침</button>
+            <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">새로고침</button>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto space-y-8">
+    <main id="reviewTab" class="max-w-7xl mx-auto space-y-8">
         <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div class="glass dashboard-card p-6 rounded-2xl">
                 <p class="text-slate-400 text-sm mb-1">전체 누적 리뷰</p>
@@ -92,10 +96,40 @@
         </section>
     </main>
 
+    <main id="seoTab" class="max-w-7xl mx-auto space-y-8 hidden">
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="glass p-6 rounded-2xl">
+                <p class="text-slate-400 text-sm mb-1">전사 SEO 평균 점수</p>
+                <h3 id="avgSeoScore" class="text-3xl font-bold text-blue-400">0점</h3>
+            </div>
+            <div class="glass p-6 rounded-2xl">
+                <p class="text-slate-400 text-sm mb-1">최적화 완료 매장</p>
+                <h3 id="optimizedCount" class="text-3xl font-bold text-green-400">0개</h3>
+            </div>
+            <div class="glass p-6 rounded-2xl">
+                <p class="text-slate-400 text-sm mb-1">벤치마킹 기준 지점</p>
+                <h3 class="text-xl font-bold text-yellow-500">평택비전점</h3>
+            </div>
+            <div class="glass p-6 rounded-2xl">
+                <p class="text-slate-400 text-sm mb-1">미흡 매장 (조치필요)</p>
+                <h3 id="lowScoreCount" class="text-3xl font-bold text-red-500">0개</h3>
+            </div>
+        </section>
+
+        <section class="glass p-8 rounded-2xl">
+            <div class="flex justify-between items-center mb-8">
+                <h4 class="text-xl font-bold">지점별 SEO 진단 및 AI 추천 카피</h4>
+                <div class="text-sm text-slate-500">*지번 주소/AI브리핑/소개글/태그 구성 기준으로 평가됨</div>
+            </div>
+            <div id="seoList" class="space-y-6">
+                <div class="text-center py-20 text-slate-500">데이터를 불러오는 중입니다...</div>
+            </div>
+        </section>
+    </main>
+
     <footer class="max-w-7xl mx-auto py-10 text-center text-slate-500 text-sm">
         &copy; 2026 달빛에구운고등어 Marketing Intelligence System. All rights reserved.
     </footer>
-
     <script src="app.js"></script>
 </body>
 </html>
