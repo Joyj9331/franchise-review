@@ -12,6 +12,7 @@ import urllib.request
 import urllib.parse
 import json
 from datetime import datetime, timedelta
+from dotenv import load_dotenv # 💡 금고 여는 부품 추가
 
 # ==========================================
 # 1. 페이지 기본 설정 및 상태 초기화
@@ -20,6 +21,9 @@ st.set_page_config(page_title="달빛에구운고등어 본사 인트라넷", la
 
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
+
+# 💡 환경 변수 로드
+load_dotenv()
 
 # ==========================================
 # 2. 공통 CSS
@@ -262,20 +266,27 @@ df = load_data()
 full_store_list = load_store_list() or (sorted(df['매장명'].unique().tolist()) if not df.empty else [])
 
 # ==========================================
-# 6. 네이버 검색광고 API
+# 6. 네이버 검색광고 API (보안 수술 완료)
 # ==========================================
+# 💡 하드코딩된 위험한 텍스트 키워드를 제거하고 .env 금고에서 꺼내오도록 변경
 NAVER_AD = {
-    "CUSTOMER_ID": "4266776",
-    "ACCESS_LICENSE": "0100000000175d0ea4a584262aa05e59eaff15777572787db3ece9c8b6e22904d8f7751e73",
-    "SECRET_KEY": "AQAAAAAXXQ6kpYQmKqBeWer/FXd1VCd/4GVxvs6E/QZEkEXbBg==",
+    "CUSTOMER_ID": os.getenv("NAVER_CUSTOMER_ID"),
+    "ACCESS_LICENSE": os.getenv("NAVER_ACCESS_LICENSE"),
+    "SECRET_KEY": os.getenv("NAVER_SECRET_KEY"),
 }
 
 def _sign(timestamp, method, path):
+    if not NAVER_AD["SECRET_KEY"]:
+        return ""
     msg = f"{timestamp}.{method}.{path}"
     h = hmac.new(NAVER_AD["SECRET_KEY"].encode(), msg.encode(), digestmod="sha256").digest()
     return base64.b64encode(h).decode()
 
 def get_keyword_stats(keywords: list):
+    if not NAVER_AD["ACCESS_LICENSE"]:
+        st.error("🚨 서버 .env 파일에 네이버 API 키가 설정되지 않았습니다.")
+        return []
+        
     path = "/keywordstool"
     all_results = []
     for i in range(0, len(keywords), 5):
